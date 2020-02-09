@@ -6,6 +6,8 @@ const IMG_EXPLOSION = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAY
 
 const FONT_WON_GAME = 'Poller One'
 const FONT_LOSE_GAME = 'Nosifer'
+const FONT_HERO = 'Poller One'
+const FONT_SIZE_HERO = 160
 
 const COLOR_WON_GAME = '#000'
 const COLOR_LOSE_GAME = '#c0392b'
@@ -29,6 +31,10 @@ const COLOR_HERO_SHADE_11 = '#292000'
 const COLOR_HERO_SHADE_12 = '#161100'
 const COLOR_HERO_SHADE_13 = '#020200'
 
+const WON_THE_GAME = 1
+const LOST_THE_GAME = -1
+const ON_THE_GAME = 0
+
 export default {
   BULLET_ICON,
   LEFT_ARROW_ICON,
@@ -38,6 +44,8 @@ export default {
 
   FONT_WON_GAME,
   FONT_LOSE_GAME,
+  FONT_HERO,
+  FONT_SIZE_HERO,
 
   COLOR_WON_GAME,
   COLOR_LOSE_GAME,
@@ -58,5 +66,9 @@ export default {
   COLOR_HERO_SHADE_10,
   COLOR_HERO_SHADE_11,
   COLOR_HERO_SHADE_12,
-  COLOR_HERO_SHADE_13
+  COLOR_HERO_SHADE_13,
+
+  WON_THE_GAME,
+  LOST_THE_GAME,
+  ON_THE_GAME
 }

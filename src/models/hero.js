@@ -50,6 +50,7 @@ class Hero {
     this.text = 'C'
     this.color = Contracts.COLOR_HERO
     this.damage = 0
+    this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})
   }
 
   updateKeyEvent (key, value) {
@@ -60,13 +61,20 @@ class Hero {
     return this.bullets
   }
 
+  addText (text) {
+    // FIXME to be better...
+    [...`${this.text}${text}`]
+      .forEach(c => this.candyMap[c] = true)
+    this.text = Object.keys(this.candyMap).filter(c => this.candyMap[c]).join('')
+  }
+
   fire (ctx, x, y) {
     // console.log('fire:', x, y)
     this.bullets.push(new Bullet(ctx, x, y))
   }
 
   drawHero (ctx, x, y) {
-    ctx.font = `bold 160px ${Contracts.FONT_WON_GAME}`
+    ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
     ctx.fillStyle = this.color
 
     const cText = ctx.measureText(this.text)
@@ -79,9 +87,11 @@ class Hero {
   decreaseHealth () {
     this.damage++
     this.color = this.damageRange[this.damage]
-    if (this.damage > 13) {
-      this.damage = 13
+    if (this.damage > 10) {
+      this.damage = 10
+      return false
     }
+    return true
   }
 
   show (pollutedY) {

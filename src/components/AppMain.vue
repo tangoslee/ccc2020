@@ -105,7 +105,7 @@
       },
       updateKeyUpEvent (event) {
         const { keyCode } = event
-        if (this.gameResult === 0) {
+        if (this.gameResult === Contracts.ON_THE_GAME) {
           this.hero.updateKeyEvent(keyCode, false)
         } else if (keyCode === 83) {
           this.startGame()
@@ -120,12 +120,17 @@
             monster.reset()
             this.increasePollutedArea()
           } else if (monster.isHit(this.hero.getBullets())) {
-            monster.reset()
+            monster.transformToHero(this.hero)
             this.decreasePollutedArea()
           } else if (monster.hitHero(this.hero)) {
             monster.reset()
-            this.hero.decreaseHealth()
-            this.increasePollutedArea(0.1)
+            if (this.hero.decreaseHealth()) {
+              this.increasePollutedArea(0.1)
+            } else {
+              // gameOver
+              // TODO quack sound
+              this.gameResult = Contracts.LOST_THE_GAME
+            }
           }
         })
       },
@@ -139,10 +144,10 @@
         this.increaseRate = 0.01
       },
       showGameOver (ctx) {
-        const font = this.gameResult === 1 ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
-        const color = this.gameResult === 1 ? Contracts.COLOR_WON_GAME : Contracts.COLOR_LOSE_GAME
+        const font = this.gameResult === Contracts.WON_THE_GAME ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
+        const color = this.gameResult === Contracts.WON_THE_GAME ? Contracts.COLOR_WON_GAME : Contracts.COLOR_LOSE_GAME
 
-        const gameResultText = this.gameResult === 1 ? 'You Won!' : 'Game Over'
+        const gameResultText = this.gameResult === Contracts.WON_THE_GAME ? 'You Won!' : 'Game Over'
         const pressToStartText = 'Press "S" to Start'
 
         ctx.font = `bold 96px ${font}`
@@ -163,14 +168,14 @@
         this.pollutedY -= Math.floor(this.height) * (increaseRate || this.increaseRate)
         if (this.pollutedY <= 0) {
           this.pollutedY = 0
-          this.gameResult = -1
+          this.gameResult = Contracts.LOST_THE_GAME
         }
       },
       decreasePollutedArea () {
         this.pollutedY += Math.floor(this.height) * this.increaseRate
         if (this.pollutedY > this.height) {
           this.pollutedY = this.height
-          this.gameResult = 1
+          this.gameResult = Contracts.WON_THE_GAME
         }
       },
       drawCleanZone (y) {
@@ -195,7 +200,7 @@
           this.drawPollutionZone(pollutedY)
 
           // Game Over
-          if (this.gameResult !== 0) {
+          if (this.gameResult !== Contracts.ON_THE_GAME) {
             this.showGameOver(this.ctx)
           } else if (this.hero) {
             this.hero.show(pollutedY)

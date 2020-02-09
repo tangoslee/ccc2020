@@ -30,6 +30,7 @@ class Monster {
     this.size = Math.round(this.random(50, 160))
     this.font = fonts[this.random(0, fonts.length - 1)]
     this.y = Math.floor(this.initY)
+    this.release = false
   }
 
   random (min, max) {
@@ -49,9 +50,19 @@ class Monster {
     // font-family: 'Frijole', cursive;
     // font-family: 'Nosifer', cursive;
 
-    this.ctx.font = `bold ${this.size}px ${this.font}`
-    this.ctx.fillStyle = Contracts.COLOR_MONSTER
-    this.ctx.fillText(this.text, this.x, this.y)
+    if (this.release) {
+      // this.ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
+      // this.ctx.save()
+      this.ctx.fillStyle = Contracts.COLOR_HERO
+      // this.ctx.rotate(90 * Math.PI / 180)
+      this.ctx.fillText(this.text, this.x, this.y)
+      // this.ctx.restore()
+    } else {
+      this.ctx.font = `bold ${this.size}px ${this.font}`
+      this.ctx.fillStyle = Contracts.COLOR_MONSTER
+      this.ctx.fillText(this.text, this.x, this.y)
+    }
+
     const { width, actualBoundingBoxAscent, actualBoundingBoxDescent } = this.ctx.measureText(this.text)
     this.w = width
     this.h = actualBoundingBoxAscent + actualBoundingBoxDescent
@@ -94,6 +105,12 @@ class Monster {
       return true
     }
     return false
+  }
+
+  transformToHero (hero) {
+    this.release = true
+    this.speed = 50
+    hero.addText(this.text)
   }
 
 }
