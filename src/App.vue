@@ -29,5 +29,11 @@
   body {
     margin: 0;
     height: 100vh;
+    /*font-family: 'Lacquer', sans-serif;*/
+    /*font-family: 'Eater', cursive;*/
+    /*font-family: 'Homemade Apple', cursive;*/
+    /*font-family: 'Freckle Face', cursive;*/
+    /*font-family: 'Frijole', cursive;*/
+    /*font-family: 'Nosifer', cursive;*/
   }
 </style>
