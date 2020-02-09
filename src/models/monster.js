@@ -58,34 +58,52 @@ class Monster {
       this.ctx.fillText(this.text, this.x, this.y)
       // this.ctx.restore()
     } else {
+      //s:debug
+      // this.ctx.font = `10px serif`
+      // this.ctx.fillStyle = Contracts.COLOR_MONSTER
+      // this.ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x + 20, this.y + 20)
+      //e: debug
+
       this.ctx.font = `bold ${this.size}px ${this.font}`
       this.ctx.fillStyle = Contracts.COLOR_MONSTER
       this.ctx.fillText(this.text, this.x, this.y)
+
     }
 
     const { width, actualBoundingBoxAscent, actualBoundingBoxDescent } = this.ctx.measureText(this.text)
-    this.w = width
-    this.h = actualBoundingBoxAscent + actualBoundingBoxDescent
+    this.w = Math.floor(width)
+    this.h = Math.floor(actualBoundingBoxAscent) + actualBoundingBoxDescent
   }
 
   drop (limit = this.height) {
     // this.velocityY = this.speed
     this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 5)
     this.velocityY = Math.floor(this.velocityY) * this.friction
-    this.y += this.velocityY
+    this.y = Math.floor(this.y) + this.velocityY
 
     // console.log('drop:', this.y, ' >= ', limit, this.y >= limit)
     if (this.y >= limit) {
-      return true
+      const release = this.release
+      this.reset()
+      return !release
     }
     return false
   }
 
-  isOverlapping (bullet) {
-    return !(bullet.x > (this.x + this.w) ||
-      (bullet.x + bullet.w) < this.x ||
-      bullet.y > (this.y + this.h) ||
-      (bullet.y + bullet.h) < this.y)
+  isOverlapping (target) {
+    const x = Math.floor(this.x)
+    const y = Math.floor(this.y)
+    const w = Math.floor(this.w)
+    const h = Math.floor(this.h)
+    // return !(target.x > (x + w) ||
+    //   (target.x + target.w) < x ||
+    //   target.y > (y + h) ||
+    //   (target.y + target.h) < y)
+    return !this.release && !(x > target.x + target.w ||
+      x + w < target.x ||
+      y + h < target.y ||
+      y > target.y + target.h
+    )
   }
 
   isHit (bullets) {
@@ -101,7 +119,7 @@ class Monster {
 
   hitHero (hero) {
     if (this.isOverlapping(hero)) {
-      // console.log('hit hero')
+      console.log('hit hero')
       return true
     }
     return false

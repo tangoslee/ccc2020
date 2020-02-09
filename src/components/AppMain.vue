@@ -24,6 +24,7 @@
         height: 512,
         margin: 20,
         hero: null,
+        hitScore: 0,
         gameResult: 0,
         monsters: [],
         pollutedY: 0,
@@ -80,6 +81,7 @@
       initGame () {
         this.pollutedY = Math.floor(this.height) * 0.8
         this.gameResult = 0
+        this.hitScore = 0
         if (this.hero) {
           this.hero.reset()
         }
@@ -113,13 +115,24 @@
           this.startDemo()
         }
       },
+      showGameInfo (ctx) {
+        const damageText = `${this.hero.damage}/${this.hero.maxDamage}`
+        const hitScoreText = `${this.hitScore}`.padStart(5, '0')
+        const gameInfoText = `DAMAGE: ${damageText} SCORE: ${hitScoreText}`
+
+        ctx.font = `bold 36px ${Contracts.FONT_GAME_INFO}`
+        ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
+
+        const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameInfoText).width / 2
+        const y = Math.floor(this.height) * 0.1
+
+        ctx.fillText(gameInfoText, x, y)
+      },
       dropMonsters (pollutedY) {
         this.monsters.forEach(monster => {
           monster.show()
-          if (monster.drop(pollutedY)) {
-            monster.reset()
-            this.increasePollutedArea()
-          } else if (monster.isHit(this.hero.getBullets())) {
+          if (monster.isHit(this.hero.getBullets())) {
+            this.hitScore++
             monster.transformToHero(this.hero)
             this.decreasePollutedArea()
           } else if (monster.hitHero(this.hero)) {
@@ -131,6 +144,8 @@
               // TODO quack sound
               this.gameResult = Contracts.LOST_THE_GAME
             }
+          } else if (monster.drop(pollutedY)) {
+            this.increasePollutedArea()
           }
         })
       },
@@ -203,6 +218,7 @@
           if (this.gameResult !== Contracts.ON_THE_GAME) {
             this.showGameOver(this.ctx)
           } else if (this.hero) {
+            this.showGameInfo(this.ctx)
             this.hero.show(pollutedY)
             this.dropMonsters(pollutedY)
           }

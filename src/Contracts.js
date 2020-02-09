@@ -7,6 +7,9 @@ const IMG_EXPLOSION = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAY
 const FONT_WON_GAME = 'Poller One'
 const FONT_LOSE_GAME = 'Nosifer'
 const FONT_HERO = 'Poller One'
+// font-family: 'VT323', monospace;
+const FONT_GAME_INFO = 'VT323'
+
 const FONT_SIZE_HERO = 160
 
 const COLOR_WON_GAME = '#000'
@@ -14,6 +17,7 @@ const COLOR_LOSE_GAME = '#c0392b'
 const COLOR_CLEAN_ZONE = '#fed136'
 const COLOR_POLLUTION_ZONE = '#000'
 
+const COLOR_GAME_INFO = '#c0392b'
 const COLOR_HERO = '#fec503'
 const COLOR_MONSTER = '#000'
 
@@ -45,6 +49,7 @@ export default {
   FONT_WON_GAME,
   FONT_LOSE_GAME,
   FONT_HERO,
+  FONT_GAME_INFO,
   FONT_SIZE_HERO,
 
   COLOR_WON_GAME,
@@ -52,6 +57,7 @@ export default {
   COLOR_CLEAN_ZONE,
   COLOR_POLLUTION_ZONE,
 
+  COLOR_GAME_INFO,
   COLOR_HERO,
   COLOR_MONSTER,
   COLOR_HERO_SHADE_1,

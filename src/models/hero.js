@@ -32,6 +32,8 @@ class Hero {
       Contracts.COLOR_HERO_SHADE_13
     ]
 
+    this.maxDamage = 13
+
     this.reset()
   }
 
@@ -73,22 +75,38 @@ class Hero {
     this.bullets.push(new Bullet(ctx, x, y))
   }
 
-  drawHero (ctx, x, y) {
+  drawHero (ctx, x, pollutedY) {
+
     ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
     ctx.fillStyle = this.color
 
-    const cText = ctx.measureText(this.text)
-    this.w = cText.width
-    this.h = cText.actualBoundingBoxAscent + cText.actualBoundingBoxDescent
+    const { width, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(this.text)
 
-    ctx.fillText(this.text, x, y)
+    this.w = Math.floor(width)
+    this.h = Math.floor(actualBoundingBoxAscent) + Math.floor(actualBoundingBoxDescent)
+    let y = Math.floor(pollutedY) + this.h - 10
+    if (y > this.boxHeight - 10) {
+      y = this.boxHeight - 10
+    }
+    ctx.fillText(this.text, x, this.y)
+
+    //S:debug
+    // const font = ctx.font
+    // ctx.save()
+    // ctx.font = `10px serif`
+    // ctx.fillStyle = Contracts.COLOR_HERO
+    // ctx.fillText(`x:${this.x},y:${y},w:${this.w},h:${this.h}, font: ${font}`, this.x + 20, y + 20)
+    // ctx.restore()
+    //E:debug
+
+    this.y = y
   }
 
   decreaseHealth () {
     this.damage++
     this.color = this.damageRange[this.damage]
-    if (this.damage > 10) {
-      this.damage = 10
+    if (this.damage > this.maxDamage) {
+      this.damage = this.maxDamage
       return false
     }
     return true
@@ -124,11 +142,7 @@ class Hero {
       x = this.xLimit
     }
 
-    const floatingY = Math.floor(pollutedY) + this.h
-    const boxY = Math.floor(this.boxHeight)
-    const fixedY = floatingY > boxY ? boxY : floatingY
-
-    this.drawHero(ctx, x, fixedY)
+    this.drawHero(ctx, x, pollutedY)
 
     this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
 
@@ -137,7 +151,7 @@ class Hero {
       const cText = ctx.measureText(this.text)
       // console.log(cText)
       keys[32] = false
-      this.fire(ctx, x + this.w / 2 + cText.actualBoundingBoxLeft, fixedY - this.h - 32)
+      this.fire(ctx, x + this.w / 2 + cText.actualBoundingBoxLeft, this.y - this.h - 32)
     }
 
     this.props = {
@@ -149,7 +163,7 @@ class Hero {
     }
 
     this.ctx = ctx
-    this.x = x
+    this.x = Math.floor(x)
   }
 
 }
