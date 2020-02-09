@@ -5,6 +5,8 @@
 </template>
 
 <script>
+  import Item from './../models/item'
+
   export default {
     name: 'AppMain',
     data () {
@@ -22,6 +24,7 @@
           speed: 50,
           friction: 0.9 // 0.98,
         },
+        monsters: [],
         pollutedY: 0,
         canvas: null,
         ctx: null
@@ -51,17 +54,28 @@
       console.log('mounted', `${this.width}x${this.height}`)
     },
     methods: {
+      random (min, max) {
+        return Math.floor(Math.random() * max) + min
+      },
       init () {
         this.ctx = this.canvas.getContext('2d')
         // console.log('canvas', canvas, ', ctx', this.ctx)
         this.canvas.width = this.width
         this.canvas.height = this.height
         this.pollutedY = this.height * 0.8
+        this.initMonsters()
         this.update()
       },
+      initMonsters () {
+        // craete monsters
+        'ANDY'.split('').forEach(ch => {
+          const item = new Item(this.ctx, this.width, this.pollutedY).setText(ch)
+          this.monsters.push(item)
+        })
+      },
       handleResize () {
-        this.width = window.innerWidth
-        this.height = window.innerHeight
+        this.width = window.innerWidth - 1
+        this.height = window.innerHeight - 1
         this.init()
       },
       updateKeyDownEvent (event) {
@@ -72,6 +86,9 @@
         const { keyCode } = event
         this.actor.keys[keyCode] = false
       },
+      moveItem () {
+
+      },
       update () {
         window.requestAnimationFrame(this.update)
 
@@ -79,14 +96,14 @@
         let ctx = this.ctx
 
         // if (keys[38]) {
-        //   if (velY > -speed) {
-        //     velY--
+        //   if (velocityY > -speed) {
+        //     velocityY -= velocityInterval
         //   }
         // }
 
         // if (keys[40]) {
-        //   if (velY < speed) {
-        //     velY++
+        //   if (velocityY < speed) {
+        //     velocityY += velocityInterval
         //   }
         // }
 
@@ -108,10 +125,8 @@
         x += velocityX
 
         if (x >= this.xLimit) {
-          // x = this.xLimit
           x = this.limitMargin
         } else if (x <= this.limitMargin) {
-          // x = this.limitMargin
           x = this.xLimit
         }
 
@@ -149,8 +164,21 @@
 
           // text
           ctx.font = 'bold 160px sans-serif'
-          ctx.fillStyle = '#fed136'
+          ctx.fillStyle = '#fec036'
           ctx.fillText('C', x, y + pollutedY)
+
+          this.monsters.forEach(monster => {
+            monster.show()
+
+            const timer = setTimeout(function () {
+              if (monster.drop()) {
+                monster.clearTimer()
+                monster.reset()
+              }
+            }, this.random(3000, 6000))
+            monster.setTimer(timer)
+          })
+
         }
 
         this.actor = {
