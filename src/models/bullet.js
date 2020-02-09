@@ -9,7 +9,7 @@ class Bullet {
     const size = 24
     this.w = size
     this.h = size
-    this.marginTop = 10
+    this.marginTop = 100
     this.reset()
   }
 

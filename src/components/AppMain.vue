@@ -12,7 +12,8 @@
    * https://stackoverflow.com/questions/29130129/how-to-fillstyle-with-images-in-canvas-html5
    */
 
-  import Bullet from '@/models/bullet'
+  import Hero from '@/models/hero'
+  // import Bullet from '@/models/bullet'
   import Monster from '@/models/monster'
 
   export default {
@@ -22,20 +23,10 @@
         width: 512,
         height: 512,
         margin: 20,
-        actor: {
-          keys: [],
-          x: 150,
-          y: 150,
-          velocityX: 0,
-          velocityY: 0,
-          velocityInterval: 5,
-          speed: 50,
-          friction: 0.9 // 0.98,
-        },
+        hero: null,
         stopFalling: false,
         gameResult: 0,
         monsters: [],
-        bullets: [],
         pollutedY: 0,
         canvas: null,
         ctx: null,
@@ -64,13 +55,7 @@
       }
     },
     created () {
-
-      const image = new Image()
-      image.src = this.bulletIconData
-      image.onload = () => {
-        this.bulletIcon = image
-      }
-
+      this.initBulletIcon()
       this.$nextTick(function () {
         window.addEventListener('resize', this.handleResize)
         window.addEventListener('keyup', this.updateKeyUpEvent)
@@ -91,12 +76,24 @@
         // console.log('canvas', canvas, ', ctx', this.ctx)
         this.canvas.width = this.width
         this.canvas.height = this.height
-        this.initMonsters()
         this.initGame()
+        this.initMonsters()
         this.run()
       },
+      initBulletIcon () {
+        const image = new Image()
+        image.src = this.bulletIconData
+        image.onload = () => {
+          // console.log('bulletIcon loaded')
+          this.bulletIcon = image
+          this.initHero()
+        }
+      },
+      initHero () {
+        this.hero = new Hero(this.ctx, this.width, this.height, { bulletIcon: this.bulletIcon })
+      },
       initMonsters () {
-        // craete monsters
+        // Create monsters
         'ANDY'.split('').forEach(ch => {
           const item = new Monster(this.ctx, this.width, this.pollutedY).setText(ch)
           this.monsters.push(item)
@@ -106,15 +103,12 @@
         this.monsters.map(monster => monster.reset())
       },
       initGame () {
-        this.actor = {
-          ...this.actor,
-          velocityX: 0,
-          velocityY: 0
-        }
         this.pollutedY = Number(this.height * 0.8).toFixed(4)
         this.stopFalling = false
         this.gameResult = 0
-        this.bullets = []
+        if (this.hero) {
+          this.hero.initGame()
+        }
       },
       handleResize () {
         this.width = window.innerWidth - 1
@@ -123,31 +117,31 @@
       },
       updateKeyDownEvent (event) {
         const { keyCode } = event
-        this.actor.keys[keyCode] = true
+        this.hero.updateKeyEvent(keyCode, true)
       },
       updateKeyUpEvent (event) {
         const { keyCode } = event
-        if (this.gameResult !== 0 && keyCode === 83) {
+        if (this.gameResult === 0) {
+          this.hero.updateKeyEvent(keyCode, false)
+        } else if (keyCode === 83) {
           this.startGame()
-        } else {
-          this.actor.keys[keyCode] = false
+        } else if (keyCode === 68) {
+          this.startDemo()
         }
       },
       dropMonsters (pollutedY) {
         this.monsters.forEach(monster => {
           monster.show()
           if (monster.drop(pollutedY)) {
-            monster.clearTimer()
             monster.reset()
             this.increasePollutedArea()
-          } else if (monster.isHit(this.bullets)) {
-            monster.clearTimer()
+          } else if (monster.isHit(this.hero.getBullets())) {
             monster.reset()
             this.decreasePollutedArea()
           }
         })
       },
-      demoGame () {
+      startDemo () {
         this.initGame()
         this.increaseRate = 0.1
       },
@@ -162,12 +156,7 @@
 
         const gameResultText = this.gameResult === 1 ? 'You Won!' : 'Game Over'
         const pressToStartText = 'Press "S" to Start'
-        // const x = this.width * 0.5 - 96 * 4
-        // console.log('gameover!!', this.width * 0.5, ', ', this.height * 0.5)
 
-        // ctx.font = 'bold 160px sans-serif'
-        // ctx.fillStyle = '#fec036'
-        //
         ctx.font = `bold 96px ${font}`
         ctx.fillStyle = `${color}`
 
@@ -198,102 +187,35 @@
           this.gameResult = 1
         }
       },
-      fire (ctx, x, initY) {
-        console.log('fire:', x, initY, this.pollutedY)
-        this.bullets.push(new Bullet(ctx, x, initY))
-      },
       run () {
         window.requestAnimationFrame(this.run)
 
-        let { keys, velocityX, velocityY, velocityInterval, speed, friction, x, y } = this.actor
-        let ctx = this.ctx
-
-        // leftArrow
-        if (keys[37]) {
-          if (velocityX > -speed) {
-            velocityX -= velocityInterval
-          }
-        }
-
-        // rightArrow
-        if (keys[39]) {
-          if (velocityX < speed) {
-            velocityX += velocityInterval
-          }
-        }
-
-        velocityX *= friction
-        x += velocityX
-
-        if (x >= this.xLimit) {
-          x = this.limitMargin
-        } else if (x <= this.limitMargin) {
-          x = this.xLimit
-        }
-
-        velocityY *= friction
-        y += velocityY
-
-        if (y > this.yLimit) {
-          y = this.yLimit
-        } else if (y <= this.limitMargin) {
-          y = this.limitMargin
-        }
-
-        // console.log(x, ',', y, ' : ', this.xLimit, this.yLimit)
-
-        if (ctx) {
+        if (this.ctx) {
           const pollutedY = Number(this.pollutedY).toFixed(4)
 
           // Clean area
-          ctx.clearRect(0, 0, this.width, this.height)
-          ctx.beginPath()
+          this.ctx.clearRect(0, 0, this.width, this.height)
+          this.ctx.beginPath()
 
-          ctx.fillStyle = '#fed136'
-          ctx.fillRect(0, 0, this.width, pollutedY)
+          this.ctx.fillStyle = '#fed136'
+          this.ctx.fillRect(0, 0, this.width, pollutedY)
 
           // Polluted area
-          ctx.fillStyle = 'black'
-          ctx.fillRect(0, pollutedY, this.width, this.height)
+          this.ctx.fillStyle = 'black'
+          this.ctx.fillRect(0, pollutedY, this.width, this.height)
 
           // Game Over
           if (this.gameResult !== 0) {
-            this.showGameOver(ctx)
-          } else {
-            // actor
-            // font-family: 'Poller One', cursive;
-            ctx.font = 'bold 160px Poller One'
-            ctx.fillStyle = '#fec036'
-            ctx.fillText('C', x, this.height - 50)
+            this.showGameOver(this.ctx)
+          } else if (this.hero) {
+            this.hero.show()
 
-            this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
-
-            // fire by spacebar
-            if (keys[32]) {
-              console.log(ctx.measureText('C'))
-              keys[32] = false
-              const cText = ctx.measureText('C')
-              this.fire(ctx, x + cText.width / 2 + cText.actualBoundingBoxLeft, this.height - 50 - (cText.actualBoundingBoxAscent + cText.actualBoundingBoxDescent) - 32)
+            if (!this.stopFalling) {
+              this.dropMonsters(pollutedY)
             }
           }
-
-          if (!this.stopFalling) {
-            this.dropMonsters(pollutedY)
-          }
-
         }
 
-        this.actor = {
-          ...this.actor,
-          keys,
-          velocityX,
-          velocityY,
-          speed,
-          friction,
-          x,
-          y
-        }
-        this.ctx = ctx
       }
     }
   }
