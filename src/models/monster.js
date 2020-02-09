@@ -24,10 +24,10 @@ class Monster {
     ]
     this.velocityY = 0
     this.speed = this.random(1, 10)
-    this.initX = this.random(100, (this.width - 200))
+    this.x = this.random(100, (this.width - 200))
     this.size = Math.round(this.random(50, 160))
     this.font = fonts[this.random(0, fonts.length - 1)]
-    this.positionY = Math.round(this.initY)
+    this.y = Math.round(this.initY)
   }
 
   random (min, max) {
@@ -49,17 +49,20 @@ class Monster {
 
     this.ctx.font = `bold ${this.size}px ${this.font}`
     this.ctx.fillStyle = '#000'
-    this.ctx.fillText(this.text, this.initX, this.positionY)
+    this.ctx.fillText(this.text, this.x, this.y)
+    const { width, actualBoundingBoxAscent, actualBoundingBoxDescent } = this.ctx.measureText(this.text)
+    this.w = width
+    this.h = actualBoundingBoxAscent + actualBoundingBoxDescent
   }
 
   drop (limit = this.height) {
     // this.velocityY = this.speed
     this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 5)
     this.velocityY *= this.friction
-    this.positionY += this.velocityY
+    this.y += this.velocityY
 
-    // console.log('drop:', this.positionY, ' >= ', limit, this.positionY >= limit)
-    if (this.positionY >= limit) {
+    // console.log('drop:', this.y, ' >= ', limit, this.y >= limit)
+    if (this.y >= limit) {
       return true
     }
     return false
@@ -71,6 +74,23 @@ class Monster {
 
   clearTimer () {
     window.clearTimeout(this.timer)
+  }
+
+  isOverlapping (bullet) {
+    return !(bullet.x > (this.x + this.w) ||
+      (bullet.x + bullet.w) < this.x ||
+      bullet.y > (this.y + this.h) ||
+      (bullet.y + bullet.h) < this.y)
+  }
+
+  isHit (bullets) {
+    for (let bullet of bullets) {
+      if (this.isOverlapping(bullet)) {
+        bullet.clear()
+        return true
+      }
+    }
+    return false
   }
 
 }

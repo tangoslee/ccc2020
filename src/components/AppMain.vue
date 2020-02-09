@@ -12,7 +12,8 @@
    * https://stackoverflow.com/questions/29130129/how-to-fillstyle-with-images-in-canvas-html5
    */
 
-  import Monster from './../models/monster'
+  import Bullet from '@/models/bullet'
+  import Monster from '@/models/monster'
 
   export default {
     name: 'AppMain',
@@ -32,24 +33,26 @@
           friction: 0.9 // 0.98,
         },
         stopFalling: false,
-        gameOver: false,
+        gameResult: 0,
         monsters: [],
+        bullets: [],
         pollutedY: 0,
         canvas: null,
         ctx: null,
+        bulletIcon: null,
         increaseRate: 0.1 // 10%
       }
     },
     computed: {
-      bullet () {
+      bulletIconData () {
         return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAjVBMVEUAAADznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBKABGUXAAAALnRSTlMAAQIFCw0QFBUXHh8nLi8zQEFCQ01OUFFWWGFmgIWUlZqdnqKjrb7AwcXZ8fn7iUnKGQAAALlJREFUOMvN1NsOgjAMBuAC4gEFQTyAgnhGBfv+j2cbE8lITW8k4b9YtuzLku4E0EVm6803y7FsQjQyEtHBRCsRXfDYDBCTjlBU1g6glAc4dRmxKWj0G1G7p3VQQxjBXUclvHRUf2YbtLAoiYmwjTyuxe8NChyKxcji3lZEA/Mo/Y6Ra6K5iG45ZcjzE+49e7PjU0aBgk4h5dpGlX7pKnpIKjqDpyMqJtZQzLW4aWZDLmUHdpa6//zd3iWRgHSXg34VAAAAAElFTkSuQmCC'
       },
-      leftArrowIcon () {
-        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAmVBMVEUAAADAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSt78jkjAAAAMnRSTlMAAQIEBQYJFhcfKjE3PEFKWWNpbXF3eHl7iY6PkZKUlaOosLK0vsHDxcfMz9Pc4unx85MFw08AAACqSURBVDjLvdPJDoJQEETRQnAecVZwFhVn6/8/zoUElMjrToje9dl0Ug2k65IrB+amJHkqyoY8FwzGY1RHYehlGj82bCvM2pLNppDDzBRmLhvrB4bB8jO/8TILGmul7vraEUCNUgBcDWpqkBUI5gIA9s6MXIjq1o9W867GmZO094ka5VWHRA3/rgYqVc9WYYwmUKgeZHUvGRCckCQfZRhztuRVMAAq1fRXPQEmLGfoWF0nmgAAAABJRU5ErkJggg=='
-      },
-      rightArrowIcon () {
-        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAgVBMVEUAAADAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvLmoxzAAAAKnRSTlMAAQIFBgkXGB8rMjg9REpcY2Zpb3N7i4yPkaOmra+wsr7Fx87P0dzi6fOZ2SpjAAAAi0lEQVQ4jeXKNxLCQBAF0V4JhPcgPMKD/v0PSECkErUzRUBCh10PKqVbaUq8xlWSllGT3CRTjSRbreRQQzlU2HlUsnepw89V8bXqrTfVjqqpgaK91SWOlAMYRup40NiD+sDdMKcATOLmnAKE+dM0H1r8sek6DLnDMHMYmqVtoFXaBrKHVBgGknZWny+QKVdr6Dj2oQAAAABJRU5ErkJggg=='
-      },
+      // leftArrowIcon () {
+      //   return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAmVBMVEUAAADAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSt78jkjAAAAMnRSTlMAAQIEBQYJFhcfKjE3PEFKWWNpbXF3eHl7iY6PkZKUlaOosLK0vsHDxcfMz9Pc4unx85MFw08AAACqSURBVDjLvdPJDoJQEETRQnAecVZwFhVn6/8/zoUElMjrToje9dl0Ug2k65IrB+amJHkqyoY8FwzGY1RHYehlGj82bCvM2pLNppDDzBRmLhvrB4bB8jO/8TILGmul7vraEUCNUgBcDWpqkBUI5gIA9s6MXIjq1o9W867GmZO094ka5VWHRA3/rgYqVc9WYYwmUKgeZHUvGRCckCQfZRhztuRVMAAq1fRXPQEmLGfoWF0nmgAAAABJRU5ErkJggg=='
+      // },
+      // rightArrowIcon () {
+      //   return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAgVBMVEUAAADAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvLmoxzAAAAKnRSTlMAAQIFBgkXGB8rMjg9REpcY2Zpb3N7i4yPkaOmra+wsr7Fx87P0dzi6fOZ2SpjAAAAi0lEQVQ4jeXKNxLCQBAF0V4JhPcgPMKD/v0PSECkErUzRUBCh10PKqVbaUq8xlWSllGT3CRTjSRbreRQQzlU2HlUsnepw89V8bXqrTfVjqqpgaK91SWOlAMYRup40NiD+sDdMKcATOLmnAKE+dM0H1r8sek6DLnDMHMYmqVtoFXaBrKHVBgGknZWny+QKVdr6Dj2oQAAAABJRU5ErkJggg=='
+      // },
       limitMargin () {
         return 5
       },
@@ -61,6 +64,13 @@
       }
     },
     created () {
+
+      const image = new Image()
+      image.src = this.bulletIconData
+      image.onload = () => {
+        this.bulletIcon = image
+      }
+
       this.$nextTick(function () {
         window.addEventListener('resize', this.handleResize)
         window.addEventListener('keyup', this.updateKeyUpEvent)
@@ -83,7 +93,7 @@
         this.canvas.height = this.height
         this.initMonsters()
         this.initGame()
-        this.update()
+        this.run()
       },
       initMonsters () {
         // craete monsters
@@ -103,7 +113,8 @@
         }
         this.pollutedY = Number(this.height * 0.8).toFixed(4)
         this.stopFalling = false
-        this.gameover = false
+        this.gameResult = 0
+        this.bullets = []
       },
       handleResize () {
         this.width = window.innerWidth - 1
@@ -116,7 +127,7 @@
       },
       updateKeyUpEvent (event) {
         const { keyCode } = event
-        if (this.gameover && keyCode === 83) {
+        if (this.gameResult !== 0 && keyCode === 83) {
           this.startGame()
         } else {
           this.actor.keys[keyCode] = false
@@ -129,6 +140,10 @@
             monster.clearTimer()
             monster.reset()
             this.increasePollutedArea()
+          } else if (monster.isHit(this.bullets)) {
+            monster.clearTimer()
+            monster.reset()
+            this.decreasePollutedArea()
           }
         })
       },
@@ -142,22 +157,29 @@
         this.increaseRate = 0.01
       },
       showGameOver (ctx) {
-        const gameOverText = 'Game Over'
+        const font = this.gameResult === 1 ? 'Poller One' : 'Nosifer'
+        const color = this.gameResult === 1 ? '#000' : '#c0392b'
+
+        const gameResultText = this.gameResult === 1 ? 'You Won!' : 'Game Over'
         const pressToStartText = 'Press "S" to Start'
         // const x = this.width * 0.5 - 96 * 4
         // console.log('gameover!!', this.width * 0.5, ', ', this.height * 0.5)
-        ctx.font = 'bold 96px Nosifer'
-        ctx.fillStyle = '#c0392b'
 
-        const x = this.width * 0.5 - ctx.measureText(gameOverText).width / 2
+        // ctx.font = 'bold 160px sans-serif'
+        // ctx.fillStyle = '#fec036'
+        //
+        ctx.font = `bold 96px ${font}`
+        ctx.fillStyle = `${color}`
+
+        const x = this.width * 0.5 - ctx.measureText(gameResultText).width / 2
         const y = this.height * 0.5
 
-        ctx.fillText(gameOverText, x, y)
+        ctx.fillText(gameResultText, x, y)
 
-        ctx.font = 'bold 36px Nosifer'
+        ctx.font = `bold 36px ${font}`
         ctx.fillText(pressToStartText, x, y + 96)
 
-        ctx.font = '18px Nosifer'
+        ctx.font = `18px ${font}`
         ctx.fillText('Controls: Spacebar, Left, Right', x, y + 140)
       },
       increasePollutedArea () {
@@ -165,26 +187,26 @@
         if (this.pollutedY <= 0) {
           this.pollutedY = 0
           this.stopFalling = true
-          this.gameover = true
+          this.gameResult = -1
         }
       },
-      update () {
-        window.requestAnimationFrame(this.update)
+      decreasePollutedArea () {
+        this.pollutedY += this.height * this.increaseRate
+        if (this.pollutedY > this.height) {
+          this.pollutedY = this.height
+          this.stopFalling = true
+          this.gameResult = 1
+        }
+      },
+      fire (ctx, x, initY) {
+        console.log('fire:', x, initY, this.pollutedY)
+        this.bullets.push(new Bullet(ctx, x, initY))
+      },
+      run () {
+        window.requestAnimationFrame(this.run)
 
         let { keys, velocityX, velocityY, velocityInterval, speed, friction, x, y } = this.actor
         let ctx = this.ctx
-
-        // if (keys[38]) {
-        //   if (velocityY > -speed) {
-        //     velocityY -= velocityInterval
-        //   }
-        // }
-
-        // if (keys[40]) {
-        //   if (velocityY < speed) {
-        //     velocityY += velocityInterval
-        //   }
-        // }
 
         // leftArrow
         if (keys[37]) {
@@ -221,12 +243,12 @@
         // console.log(x, ',', y, ' : ', this.xLimit, this.yLimit)
 
         if (ctx) {
-          const pollutedY = this.pollutedY
+          const pollutedY = Number(this.pollutedY).toFixed(4)
 
+          // Clean area
           ctx.clearRect(0, 0, this.width, this.height)
           ctx.beginPath()
 
-          // Clean area
           ctx.fillStyle = '#fed136'
           ctx.fillRect(0, 0, this.width, pollutedY)
 
@@ -235,13 +257,24 @@
           ctx.fillRect(0, pollutedY, this.width, this.height)
 
           // Game Over
-          if (this.gameover) {
+          if (this.gameResult !== 0) {
             this.showGameOver(ctx)
           } else {
             // actor
-            ctx.font = 'bold 160px sans-serif'
+            // font-family: 'Poller One', cursive;
+            ctx.font = 'bold 160px Poller One'
             ctx.fillStyle = '#fec036'
             ctx.fillText('C', x, this.height - 50)
+
+            this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
+
+            // fire by spacebar
+            if (keys[32]) {
+              console.log(ctx.measureText('C'))
+              keys[32] = false
+              const cText = ctx.measureText('C')
+              this.fire(ctx, x + cText.width / 2 + cText.actualBoundingBoxLeft, this.height - 50 - (cText.actualBoundingBoxAscent + cText.actualBoundingBoxDescent) - 32)
+            }
           }
 
           if (!this.stopFalling) {
