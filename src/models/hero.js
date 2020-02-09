@@ -1,4 +1,5 @@
 import Bullet from '@/models/bullet'
+import Contracts from '@/Contracts'
 
 class Hero {
 
@@ -6,36 +7,49 @@ class Hero {
     // console.log('hero created')
 
     this.ctx = ctx
-    this.boxWidth = boxWidth
-    this.boxHeight = boxHeight
+    this.boxWidth = Math.floor(boxWidth)
+    this.boxHeight = Math.floor(boxHeight)
 
     this.bulletIcon = bulletIcon
-    this.text = 'C'
 
-    this.bullets = []
+    this.limitMargin = 5
+    this.xLimit = this.boxWidth - this.limitMargin
+    // this.yLimit = this.boxHeight - this.limitMargin
+
+    this.damageRange = [
+      Contracts.COLOR_HERO_SHADE_1,
+      Contracts.COLOR_HERO_SHADE_2,
+      Contracts.COLOR_HERO_SHADE_3,
+      Contracts.COLOR_HERO_SHADE_4,
+      Contracts.COLOR_HERO_SHADE_5,
+      Contracts.COLOR_HERO_SHADE_6,
+      Contracts.COLOR_HERO_SHADE_7,
+      Contracts.COLOR_HERO_SHADE_8,
+      Contracts.COLOR_HERO_SHADE_9,
+      Contracts.COLOR_HERO_SHADE_10,
+      Contracts.COLOR_HERO_SHADE_11,
+      Contracts.COLOR_HERO_SHADE_12,
+      Contracts.COLOR_HERO_SHADE_13
+    ]
+
+    this.reset()
+  }
+
+  reset () {
     this.props = {
       keys: [],
-      x: 150,
-      y: 150,
       velocityX: 0,
-      velocityY: 0,
       velocityInterval: 5,
       speed: 50,
       friction: 0.9 // 0.98,
     }
-
-    this.limitMargin = 5
-    this.xLimit = this.boxWidth - this.limitMargin
-    this.yLimit = this.boxHeight - this.limitMargin
-  }
-
-  initGame () {
-    this.props = {
-      ...this.props,
-      velocityX: 0,
-      velocityY: 0
-    }
+    this.x = 150
+    this.y = this.boxHeight - 50
     this.bullets = []
+
+    this.text = 'C'
+    this.color = Contracts.COLOR_HERO
+    this.damage = 0
   }
 
   updateKeyEvent (key, value) {
@@ -51,9 +65,29 @@ class Hero {
     this.bullets.push(new Bullet(ctx, x, y))
   }
 
-  show () {
-    let { keys, velocityX, velocityY, velocityInterval, speed, friction, x, y } = this.props
+  drawHero (ctx, x, y) {
+    ctx.font = `bold 160px ${Contracts.FONT_WON_GAME}`
+    ctx.fillStyle = this.color
+
+    const cText = ctx.measureText(this.text)
+    this.w = cText.width
+    this.h = cText.actualBoundingBoxAscent + cText.actualBoundingBoxDescent
+
+    ctx.fillText(this.text, x, y)
+  }
+
+  decreaseHealth () {
+    this.damage++
+    this.color = this.damageRange[this.damage]
+    if (this.damage > 13) {
+      this.damage = 13
+    }
+  }
+
+  show (pollutedY) {
+    let { keys, velocityX, velocityInterval, speed, friction } = this.props
     let ctx = this.ctx
+    let x = this.x
 
     // leftArrow
     if (keys[37]) {
@@ -69,8 +103,10 @@ class Hero {
       }
     }
 
-    velocityX *= friction
+    velocityX = Math.floor(velocityX) * friction
     x += velocityX
+
+    // console.log(velocityX)
 
     if (x >= this.xLimit) {
       x = this.limitMargin
@@ -78,18 +114,11 @@ class Hero {
       x = this.xLimit
     }
 
-    velocityY *= friction
-    y += velocityY
+    const floatingY = Math.floor(pollutedY) + this.h
+    const boxY = Math.floor(this.boxHeight)
+    const fixedY = floatingY > boxY ? boxY : floatingY
 
-    if (y > this.yLimit) {
-      y = this.yLimit
-    } else if (y <= this.limitMargin) {
-      y = this.limitMargin
-    }
-
-    ctx.font = 'bold 160px Poller One'
-    ctx.fillStyle = '#fec036'
-    ctx.fillText(this.text, x, this.boxHeight - 50)
+    this.drawHero(ctx, x, fixedY)
 
     this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
 
@@ -98,21 +127,19 @@ class Hero {
       const cText = ctx.measureText(this.text)
       // console.log(cText)
       keys[32] = false
-      this.fire(ctx, x + cText.width / 2 + cText.actualBoundingBoxLeft, this.boxHeight - 50 - (cText.actualBoundingBoxAscent + cText.actualBoundingBoxDescent) - 32)
+      this.fire(ctx, x + this.w / 2 + cText.actualBoundingBoxLeft, fixedY - this.h - 32)
     }
 
     this.props = {
       ...this.props,
       keys,
       velocityX,
-      velocityY,
       speed,
-      friction,
-      x,
-      y
+      friction
     }
 
     this.ctx = ctx
+    this.x = x
   }
 
 }

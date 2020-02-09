@@ -1,6 +1,8 @@
+import Contracts from '@/Contracts'
+
 class Monster {
   constructor (ctx, width, height) {
-    console.log('item created')
+    // console.log('monster created')
 
     this.ctx = ctx
     this.width = width
@@ -13,7 +15,7 @@ class Monster {
   }
 
   reset () {
-    console.log('reset monster')
+    // console.log('reset monster')
     const fonts = [
       'Lacquer',
       'Eater',
@@ -27,7 +29,7 @@ class Monster {
     this.x = this.random(100, (this.width - 200))
     this.size = Math.round(this.random(50, 160))
     this.font = fonts[this.random(0, fonts.length - 1)]
-    this.y = Math.round(this.initY)
+    this.y = Math.floor(this.initY)
   }
 
   random (min, max) {
@@ -48,7 +50,7 @@ class Monster {
     // font-family: 'Nosifer', cursive;
 
     this.ctx.font = `bold ${this.size}px ${this.font}`
-    this.ctx.fillStyle = '#000'
+    this.ctx.fillStyle = Contracts.COLOR_MONSTER
     this.ctx.fillText(this.text, this.x, this.y)
     const { width, actualBoundingBoxAscent, actualBoundingBoxDescent } = this.ctx.measureText(this.text)
     this.w = width
@@ -58,7 +60,7 @@ class Monster {
   drop (limit = this.height) {
     // this.velocityY = this.speed
     this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 5)
-    this.velocityY *= this.friction
+    this.velocityY = Math.floor(this.velocityY) * this.friction
     this.y += this.velocityY
 
     // console.log('drop:', this.y, ' >= ', limit, this.y >= limit)
@@ -66,14 +68,6 @@ class Monster {
       return true
     }
     return false
-  }
-
-  setTimer (val) {
-    this.timer = val
-  }
-
-  clearTimer () {
-    window.clearTimeout(this.timer)
   }
 
   isOverlapping (bullet) {
@@ -86,9 +80,18 @@ class Monster {
   isHit (bullets) {
     for (let bullet of bullets) {
       if (this.isOverlapping(bullet)) {
+        // console.log('hit monster')
         bullet.clear()
         return true
       }
+    }
+    return false
+  }
+
+  hitHero (hero) {
+    if (this.isOverlapping(hero)) {
+      // console.log('hit hero')
+      return true
     }
     return false
   }

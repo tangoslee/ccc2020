@@ -1,6 +1,6 @@
 class Bullet {
   constructor (ctx, x, y) {
-    console.log('bullet created')
+    // console.log('bullet created')
 
     this.ctx = ctx
     this.x = x
@@ -14,10 +14,10 @@ class Bullet {
   }
 
   reset () {
-    console.log('reset bullet')
+    // console.log('reset bullet')
     this.velocityY = 0
     this.speed = 10
-    this.y = Math.round(this.initY)
+    this.y = Math.floor(this.initY)
   }
 
   clear () {
