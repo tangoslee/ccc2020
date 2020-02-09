@@ -5,7 +5,14 @@
 </template>
 
 <script>
-  import Item from './../models/item'
+  /**
+   * @references
+   * http://jsfiddle.net/loktar/dMYvG/
+   * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes
+   * https://stackoverflow.com/questions/29130129/how-to-fillstyle-with-images-in-canvas-html5
+   */
+
+  import Monster from './../models/monster'
 
   export default {
     name: 'AppMain',
@@ -24,15 +31,24 @@
           speed: 50,
           friction: 0.9 // 0.98,
         },
+        stopFalling: false,
+        gameOver: false,
         monsters: [],
         pollutedY: 0,
         canvas: null,
-        ctx: null
+        ctx: null,
+        increaseRate: 0.1 // 10%
       }
     },
     computed: {
       bullet () {
         return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAjVBMVEUAAADznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBKABGUXAAAALnRSTlMAAQIFCw0QFBUXHh8nLi8zQEFCQ01OUFFWWGFmgIWUlZqdnqKjrb7AwcXZ8fn7iUnKGQAAALlJREFUOMvN1NsOgjAMBuAC4gEFQTyAgnhGBfv+j2cbE8lITW8k4b9YtuzLku4E0EVm6803y7FsQjQyEtHBRCsRXfDYDBCTjlBU1g6glAc4dRmxKWj0G1G7p3VQQxjBXUclvHRUf2YbtLAoiYmwjTyuxe8NChyKxcji3lZEA/Mo/Y6Ra6K5iG45ZcjzE+49e7PjU0aBgk4h5dpGlX7pKnpIKjqDpyMqJtZQzLW4aWZDLmUHdpa6//zd3iWRgHSXg34VAAAAAElFTkSuQmCC'
+      },
+      leftArrowIcon () {
+        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAmVBMVEUAAADAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSt78jkjAAAAMnRSTlMAAQIEBQYJFhcfKjE3PEFKWWNpbXF3eHl7iY6PkZKUlaOosLK0vsHDxcfMz9Pc4unx85MFw08AAACqSURBVDjLvdPJDoJQEETRQnAecVZwFhVn6/8/zoUElMjrToje9dl0Ug2k65IrB+amJHkqyoY8FwzGY1RHYehlGj82bCvM2pLNppDDzBRmLhvrB4bB8jO/8TILGmul7vraEUCNUgBcDWpqkBUI5gIA9s6MXIjq1o9W867GmZO094ka5VWHRA3/rgYqVc9WYYwmUKgeZHUvGRCckCQfZRhztuRVMAAq1fRXPQEmLGfoWF0nmgAAAABJRU5ErkJggg=='
+      },
+      rightArrowIcon () {
+        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAgVBMVEUAAADAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvAOSvLmoxzAAAAKnRSTlMAAQIFBgkXGB8rMjg9REpcY2Zpb3N7i4yPkaOmra+wsr7Fx87P0dzi6fOZ2SpjAAAAi0lEQVQ4jeXKNxLCQBAF0V4JhPcgPMKD/v0PSECkErUzRUBCh10PKqVbaUq8xlWSllGT3CRTjSRbreRQQzlU2HlUsnepw89V8bXqrTfVjqqpgaK91SWOlAMYRup40NiD+sDdMKcATOLmnAKE+dM0H1r8sek6DLnDMHMYmqVtoFXaBrKHVBgGknZWny+QKVdr6Dj2oQAAAABJRU5ErkJggg=='
       },
       limitMargin () {
         return 5
@@ -65,16 +81,29 @@
         // console.log('canvas', canvas, ', ctx', this.ctx)
         this.canvas.width = this.width
         this.canvas.height = this.height
-        this.pollutedY = this.height * 0.8
         this.initMonsters()
+        this.initGame()
         this.update()
       },
       initMonsters () {
         // craete monsters
         'ANDY'.split('').forEach(ch => {
-          const item = new Item(this.ctx, this.width, this.pollutedY).setText(ch)
+          const item = new Monster(this.ctx, this.width, this.pollutedY).setText(ch)
           this.monsters.push(item)
         })
+      },
+      resetMonsters () {
+        this.monsters.map(monster => monster.reset())
+      },
+      initGame () {
+        this.actor = {
+          ...this.actor,
+          velocityX: 0,
+          velocityY: 0
+        }
+        this.pollutedY = Number(this.height * 0.8).toFixed(4)
+        this.stopFalling = false
+        this.gameover = false
       },
       handleResize () {
         this.width = window.innerWidth - 1
@@ -87,10 +116,57 @@
       },
       updateKeyUpEvent (event) {
         const { keyCode } = event
-        this.actor.keys[keyCode] = false
+        if (this.gameover && keyCode === 83) {
+          this.startGame()
+        } else {
+          this.actor.keys[keyCode] = false
+        }
       },
-      moveItem () {
+      dropMonsters (pollutedY) {
+        this.monsters.forEach(monster => {
+          monster.show()
+          if (monster.drop(pollutedY)) {
+            monster.clearTimer()
+            monster.reset()
+            this.increasePollutedArea()
+          }
+        })
+      },
+      demoGame () {
+        this.initGame()
+        this.increaseRate = 0.1
+      },
+      startGame () {
+        this.resetMonsters()
+        this.initGame()
+        this.increaseRate = 0.01
+      },
+      showGameOver (ctx) {
+        const gameOverText = 'Game Over'
+        const pressToStartText = 'Press "S" to Start'
+        // const x = this.width * 0.5 - 96 * 4
+        // console.log('gameover!!', this.width * 0.5, ', ', this.height * 0.5)
+        ctx.font = 'bold 96px Nosifer'
+        ctx.fillStyle = '#c0392b'
 
+        const x = this.width * 0.5 - ctx.measureText(gameOverText).width / 2
+        const y = this.height * 0.5
+
+        ctx.fillText(gameOverText, x, y)
+
+        ctx.font = 'bold 36px Nosifer'
+        ctx.fillText(pressToStartText, x, y + 96)
+
+        ctx.font = '18px Nosifer'
+        ctx.fillText('Controls: Spacebar, Left, Right', x, y + 140)
+      },
+      increasePollutedArea () {
+        this.pollutedY -= this.height * this.increaseRate
+        if (this.pollutedY <= 0) {
+          this.pollutedY = 0
+          this.stopFalling = true
+          this.gameover = true
+        }
       },
       update () {
         window.requestAnimationFrame(this.update)
@@ -156,31 +232,21 @@
 
           // Polluted area
           ctx.fillStyle = 'black'
-          ctx.fillRect(0, pollutedY, this.width, pollutedY)
+          ctx.fillRect(0, pollutedY, this.width, this.height)
 
-          // packman
-          // ctx.arc(x, y, 13, Math.PI / 7, -Math.PI / 7, false)
-          // ctx.lineTo(x - 6, y)
-          // dot
-          // ctx.arc(x, y, 5, 0, Math.PI * 2)
-          // ctx.fill()
+          // Game Over
+          if (this.gameover) {
+            this.showGameOver(ctx)
+          } else {
+            // actor
+            ctx.font = 'bold 160px sans-serif'
+            ctx.fillStyle = '#fec036'
+            ctx.fillText('C', x, this.height - 50)
+          }
 
-          // text
-          ctx.font = 'bold 160px sans-serif'
-          ctx.fillStyle = '#fec036'
-          ctx.fillText('C', x, y + pollutedY)
-
-          this.monsters.forEach(monster => {
-            monster.show()
-
-            const timer = setTimeout(function () {
-              if (monster.drop()) {
-                monster.clearTimer()
-                monster.reset()
-              }
-            }, this.random(3000, 6000))
-            monster.setTimer(timer)
-          })
+          if (!this.stopFalling) {
+            this.dropMonsters(pollutedY)
+          }
 
         }
 

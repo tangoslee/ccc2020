@@ -1,4 +1,4 @@
-class Item {
+class Monster {
   constructor (ctx, width, height) {
     console.log('item created')
 
@@ -13,6 +13,7 @@ class Item {
   }
 
   reset () {
+    console.log('reset monster')
     const fonts = [
       'Lacquer',
       'Eater',
@@ -22,11 +23,11 @@ class Item {
       'Nosifer'
     ]
     this.velocityY = 0
-    this.speed = this.random(1, 20)
+    this.speed = this.random(1, 10)
     this.initX = this.random(100, (this.width - 200))
     this.size = Math.round(this.random(50, 160))
     this.font = fonts[this.random(0, fonts.length - 1)]
-    this.positionY = this.initY
+    this.positionY = Math.round(this.initY)
   }
 
   random (min, max) {
@@ -51,13 +52,14 @@ class Item {
     this.ctx.fillText(this.text, this.initX, this.positionY)
   }
 
-  drop () {
-    // console.log('drop')
-    this.velocityY = this.random(Math.max(1, this.speed - 2), this.speed + 2)
+  drop (limit = this.height) {
+    // this.velocityY = this.speed
+    this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 5)
     this.velocityY *= this.friction
     this.positionY += this.velocityY
 
-    if (this.positionY >= this.height) {
+    // console.log('drop:', this.positionY, ' >= ', limit, this.positionY >= limit)
+    if (this.positionY >= limit) {
       return true
     }
     return false
@@ -73,4 +75,4 @@ class Item {
 
 }
 
-export default Item
+export default Monster
