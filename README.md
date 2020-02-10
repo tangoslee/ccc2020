@@ -27,3 +27,9 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## Credit
+- Bomb explosion sound
+  https://opengameart.org/content/bombexplosion8bit
+- Explosion
+  https://opengameart.org/content/explosion
