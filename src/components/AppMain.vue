@@ -80,7 +80,7 @@
       },
       initGame () {
         this.pollutedY = Math.floor(this.height) * 0.8
-        this.gameResult = 0
+        this.gameResult = Contracts.INTRO_THE_GAME
         this.hitScore = 0
         if (this.hero) {
           this.hero.reset()
@@ -107,12 +107,30 @@
       },
       updateKeyUpEvent (event) {
         const { keyCode } = event
+        // console.log(keyCode)
         if (this.gameResult === Contracts.ON_THE_GAME) {
           this.hero.updateKeyEvent(keyCode, false)
-        } else if (keyCode === 83) {
+        } else if (keyCode === Contracts.KEY_CODE_S) {
           this.startGame()
-        } else if (keyCode === 68) {
+        } else if (keyCode === Contracts.KEY_CODE_D) {
           this.startDemo()
+        } else if (keyCode === Contracts.KEY_CODE_C) {
+          this.continueGame()
+        }
+      },
+      showGameIntro (ctx) {
+        const introTexts = Contracts.INTRO_TEXT.split('\n')
+
+        ctx.font = `bold 36px ${Contracts.FONT_GAME_INFO}`
+        ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
+
+        let lineHeight = 36
+        for (let introText of introTexts) {
+          const x = Math.floor(this.width) * 0.5 - ctx.measureText(introText).width / 2
+          const y = Math.floor(this.height) * 0.1
+
+          ctx.fillText(introText, x, y + lineHeight)
+          lineHeight += 36
         }
       },
       showGameInfo (ctx) {
@@ -157,6 +175,9 @@
         this.resetMonsters()
         this.initGame()
         this.increaseRate = 0.01
+      },
+      continueGame () {
+        this.gameResult = Contracts.ON_THE_GAME
       },
       showGameOver (ctx) {
         const font = this.gameResult === Contracts.WON_THE_GAME ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
@@ -214,8 +235,9 @@
           this.drawCleanZone(pollutedY)
           this.drawPollutionZone(pollutedY)
 
-          // Game Over
-          if (this.gameResult !== Contracts.ON_THE_GAME) {
+          if (this.gameResult === Contracts.INTRO_THE_GAME) {
+            this.showGameIntro(this.ctx)
+          } else if (this.gameResult !== Contracts.ON_THE_GAME) {
             this.showGameOver(this.ctx)
           } else if (this.hero) {
             this.showGameInfo(this.ctx)
