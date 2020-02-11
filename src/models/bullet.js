@@ -30,8 +30,11 @@ class Bullet {
       this.ctx.drawImage(icon, this.x, this.y, this.w, this.h)
 
       this.velocityY = this.speed
-      this.velocityY *= this.friction
+      this.velocityY = Math.floor(this.velocityY) * this.friction
       this.y -= this.velocityY
+
+      // console.log('bullet speed ', this.velocityY)
+
       return true
     }
     return false

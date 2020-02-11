@@ -20,6 +20,7 @@
     name: 'AppMain',
     data () {
       return {
+        pause: false,
         width: 512,
         height: 512,
         margin: 20,
@@ -40,7 +41,10 @@
           intro: 0,
           gameover: 0
         },
-        demoMode: false
+        demoMode: false,
+        start: null,
+        frame1: null,
+        frame2: null
       }
     },
     computed: {
@@ -80,8 +84,18 @@
         this.height = window.innerHeight - 1
         this.init()
       },
+      requestFrame () {
+        if (this.frame1) {
+          window.cancelAnimationFrame(this.frame1)
+        }
+        if (!this.pause) {
+          this.frame1 = window.requestAnimationFrame(this.run)
+        }
+      },
       init () {
-        console.log('init')
+        // console.log('init')
+        this.pause = false
+        this.start = null
         // console.log('canvas', canvas, ', ctx', this.ctx)
         this.demoMode = false
         this.timer = {
@@ -92,7 +106,7 @@
         this.canvas.height = this.height
         this.initGame()
         this.initMonsters()
-        this.run()
+        this.requestFrame()
       },
       initGame () {
         this.pollutedY = Math.floor(this.height) * 0.8
@@ -127,7 +141,9 @@
       updateKeyUpEvent (event) {
         const { keyCode } = event
         // console.log(keyCode)
-        if (this.gameResult === Contracts.ON_THE_GAME) {
+        if (keyCode === Contracts.KEY_CODE_P) {
+          this.togglePause()
+        } else if (this.gameResult === Contracts.ON_THE_GAME) {
           this.hero.updateKeyEvent(keyCode, false)
         } else if (keyCode === Contracts.KEY_CODE_S) {
           this.startGame()
@@ -135,6 +151,13 @@
           this.startDemo()
         } else if (keyCode === Contracts.KEY_CODE_C) {
           this.continueGame()
+        }
+      },
+      togglePause () {
+        this.pause = !this.pause
+        // console.log('pause', this.pause)
+        if (!this.pause) {
+          this.requestFrame()
         }
       },
       showGameIntro ({ ctx }) {
@@ -160,7 +183,7 @@
           lineHeight += 36
         }
 
-        if (seconds === 0) {
+        if (seconds <= 0) {
           this.startDemo()
         }
       },
@@ -197,7 +220,7 @@
         ctx.font = `24px ${font}`
         ctx.fillText(`Continue to after ${seconds} second${seconds !== 1 ? 's' : ''}`, x, y + 140)
 
-        if (seconds === 0) {
+        if (seconds <= 0) {
           // console.log('time over')
           this.gameResult = Contracts.INTRO_THE_GAME
           this.init()
@@ -290,10 +313,23 @@
         ctx.fillStyle = Contracts.COLOR_POLLUTION_ZONE
         ctx.fillRect(0, y, this.width, this.height)
       },
-      run () {
-        window.requestAnimationFrame(this.run)
+      /**
+       * https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
+       *
+       * @param timestamp
+       */
+      run (timestamp) {
+        // console.log((new Date()).getSeconds())
+        // console.log('timestamp', timestamp)
+        if (!this.start) {
+          this.start = timestamp
+        }
+
+        // let progress = Math.floor(timestamp - this.start)
+        // console.log('progress ', progress)
 
         if (this.ctx) {
+
           const pollutedY = Math.floor(this.pollutedY)
 
           // Clean area
@@ -316,6 +352,7 @@
             // Game Over
             case (this.gameResult !== Contracts.ON_THE_GAME) :
               // this.game.ending.run()
+              this.showGameInfo(this.ctx)
               this.showGameOver(this.ctx)
               break
             // Game On
@@ -329,6 +366,8 @@
           }
 
         } // ctx
+
+        this.requestFrame()
 
       } // run
 

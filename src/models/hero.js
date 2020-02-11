@@ -126,10 +126,14 @@ class Hero {
 
   getDemoControl () {
     const ms = Date.now()
-    const k = Math.floor(ms / 240) % 240
+    const k = Math.floor(ms / 240) % 240 % 10
     const f = Math.floor(ms) % 10
-    // console.log(ms, k, f)
-    const xVelocity = (k % 10 > 6) ? -5 : 5
+
+    // if (f < 1) {
+    //   console.log(ms, k, f)
+    // }
+
+    const xVelocity = (k > 6) ? -5 : 5
     const fired = f < 1
 
     return {
@@ -168,11 +172,11 @@ class Hero {
     velocityX = Math.floor(velocityX) * friction
     x += velocityX
 
-    // console.log(velocityX)
+    // console.log('hero speed ', velocityX)
 
     if (x >= this.xLimit) {
       x = this.limitMargin
-    } else if (x <= this.limitMargin) {
+    } else if (x <= this.limitMargin - Math.floor(this.w / 2)) {
       x = this.xLimit
     }
 

@@ -49,6 +49,7 @@ const PLAY_DEMO = 3
 
 const KEY_CODE_C = 67
 const KEY_CODE_D = 68
+const KEY_CODE_P = 80
 const KEY_CODE_S = 83
 const KEY_CODE_SPACEBAR = 32
 const KEY_CODE_LEFT_ARROW = 37
@@ -98,6 +99,7 @@ export default {
 
   KEY_CODE_C,
   KEY_CODE_D,
+  KEY_CODE_P,
   KEY_CODE_S,
   KEY_CODE_SPACEBAR,
   KEY_CODE_LEFT_ARROW,

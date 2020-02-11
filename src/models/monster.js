@@ -77,10 +77,11 @@ class Monster {
 
   drop (limit = this.height) {
     // this.velocityY = this.speed
-    this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 5)
+    this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 4)
     this.velocityY = Math.floor(this.velocityY) * this.friction
     this.y = Math.floor(this.y) + this.velocityY
 
+    // console.log('monster speed', this.velocityY)
     // console.log('drop:', this.y, ' >= ', limit, this.y >= limit)
     if (this.y >= limit) {
       const release = this.release
@@ -119,7 +120,7 @@ class Monster {
 
   hitHero (hero) {
     if (this.isOverlapping(hero)) {
-      console.log('hit hero')
+      // console.log('hit hero')
       return true
     }
     return false
