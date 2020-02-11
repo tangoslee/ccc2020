@@ -1,7 +1,7 @@
 const INTRO_TEXT = `The C-Virus spread out whole over the world.\n
 Candy Lab finally developed the cure \nbut all crews have been infected except you.\n 
 Save the crews, save the world!\n
-Press "C" or after ##SEC## seconds to Continue...\n
+Press "S" or after ##SEC## seconds to Continue...\n
 Controls: Spacebar, Left, Right`
 
 const BULLET_ICON = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAjVBMVEUAAADznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBKABGUXAAAALnRSTlMAAQIFCw0QFBUXHh8nLi8zQEFCQ01OUFFWWGFmgIWUlZqdnqKjrb7AwcXZ8fn7iUnKGQAAALlJREFUOMvN1NsOgjAMBuAC4gEFQTyAgnhGBfv+j2cbE8lITW8k4b9YtuzLku4E0EVm6803y7FsQjQyEtHBRCsRXfDYDBCTjlBU1g6glAc4dRmxKWj0G1G7p3VQQxjBXUclvHRUf2YbtLAoiYmwjTyuxe8NChyKxcji3lZEA/Mo/Y6Ra6K5iG45ZcjzE+49e7PjU0aBgk4h5dpGlX7pKnpIKjqDpyMqJtZQzLW4aWZDLmUHdpa6//zd3iWRgHSXg34VAAAAAElFTkSuQmCC'

@@ -37,7 +37,8 @@
           ending: null
         },
         timer: {
-          intro: 0
+          intro: 0,
+          gameover: 0
         },
         demoMode: false
       }
@@ -54,7 +55,7 @@
       }
     },
     created () {
-      console.log('created')
+      // console.log('created')
       this.gameResult = Contracts.INTRO_THE_GAME
       this.initBulletIcon()
       this.$nextTick(function () {
@@ -84,7 +85,7 @@
         // console.log('canvas', canvas, ', ctx', this.ctx)
         this.demoMode = false
         this.timer = {
-          intro: 10 + Math.floor(Date.now() / 1000)
+          intro: 5 + Math.floor(Date.now() / 1000)
         }
 
         this.canvas.width = this.width
@@ -102,6 +103,7 @@
       },
       initMonsters () {
         // Create monsters
+        this.monsters = []
         'ANDY'.split('').forEach(ch => {
           const monster = new Monster(this.ctx, this.width, this.pollutedY).setText(ch)
           this.monsters.push(monster)
@@ -159,11 +161,56 @@
         }
 
         if (seconds === 0) {
-          // this.continueGame()
           this.startDemo()
         }
-      }
-      ,
+      },
+      showGameOver (ctx) {
+        const seconds = Math.floor(this.timer.gameover) - Math.floor(Date.now() / 1000)
+
+        let font = Contracts.FONT_LOSE_GAME
+        let color = Contracts.COLOR_LOSE_GAME
+        let gameResultText = 'Game Over'
+
+        if (this.gameResult === Contracts.WON_THE_GAME) {
+          font = Contracts.FONT_WON_GAME
+          color = Contracts.COLOR_WON_GAME
+          gameResultText = 'You Won!'
+        }
+
+        // const font = this.gameResult === Contracts.WON_THE_GAME ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
+        // const color = this.gameResult === Contracts.WON_THE_GAME ? Contracts.COLOR_WON_GAME : Contracts.COLOR_LOSE_GAME
+        // const gameResultText = this.gameResult === Contracts.WON_THE_GAME ? 'You Won!' : 'Game Over'
+
+        const pressToStartText = 'Press "S" to Start'
+
+        ctx.font = `bold 96px ${font}`
+        ctx.fillStyle = `${color}`
+
+        const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameResultText).width / 2
+        const y = Math.floor(this.height) * 0.5
+
+        ctx.fillText(gameResultText, x, y)
+
+        ctx.font = `bold 36px ${font}`
+        ctx.fillText(pressToStartText, x, y + 96)
+
+        ctx.font = `24px ${font}`
+        ctx.fillText(`Continue to after ${seconds} second${seconds !== 1 ? 's' : ''}`, x, y + 140)
+
+        if (seconds === 0) {
+          // console.log('time over')
+          this.gameResult = Contracts.INTRO_THE_GAME
+          this.init()
+        }
+
+      },
+      increasePollutedArea (increaseRate = null) {
+        this.pollutedY -= Math.floor(this.height) * (increaseRate || this.increaseRate)
+        if (this.pollutedY <= 0) {
+          this.pollutedY = 0
+          this.lostGame()
+        }
+      },
       showGameInfo (ctx) {
         const damageText = `${this.hero.damage}/${this.hero.maxDamage}`
         const hitScoreText = `${this.hitScore}`.padStart(5, '0')
@@ -176,9 +223,9 @@
         const y = Math.floor(this.height) * 0.1
 
         ctx.fillText(gameInfoText, x, y)
-      }
-      ,
+      },
       dropMonsters (pollutedY) {
+        // console.log('monsters', this.monsters.length)
         this.monsters.forEach(monster => {
           monster.show()
 
@@ -193,82 +240,56 @@
             } else {
               // gameOver
               // TODO quack sound
-              this.gameResult = Contracts.LOST_THE_GAME
+              this.lostGame()
             }
           } else if (monster.drop(pollutedY)) {
             this.increasePollutedArea()
           }
         })
-      }
-      ,
+      },
       startDemo () {
         this.demoMode = true
         this.increaseRate = 0.1
         this.gameResult = Contracts.ON_THE_GAME
         this.resetMonsters()
         this.initGame()
-      }
-      ,
+      },
       startGame () {
         this.demoMode = false
         this.increaseRate = 0.01
         this.gameResult = Contracts.ON_THE_GAME
         this.resetMonsters()
         this.initGame()
-      }
-      ,
+      },
       continueGame () {
         this.gameResult = Contracts.ON_THE_GAME
-      }
-      ,
-      showGameOver (ctx) {
-        const font = this.gameResult === Contracts.WON_THE_GAME ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
-        const color = this.gameResult === Contracts.WON_THE_GAME ? Contracts.COLOR_WON_GAME : Contracts.COLOR_LOSE_GAME
-
-        const gameResultText = this.gameResult === Contracts.WON_THE_GAME ? 'You Won!' : 'Game Over'
-        const pressToStartText = 'Press "S" to Start'
-
-        ctx.font = `bold 96px ${font}`
-        ctx.fillStyle = `${color}`
-
-        const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameResultText).width / 2
-        const y = Math.floor(this.height) * 0.5
-
-        ctx.fillText(gameResultText, x, y)
-
-        ctx.font = `bold 36px ${font}`
-        ctx.fillText(pressToStartText, x, y + 96)
-
-        ctx.font = `18px ${font}`
-        ctx.fillText('Controls: Spacebar, Left, Right', x, y + 140)
-      }
-      ,
-      increasePollutedArea (increaseRate = null) {
-        this.pollutedY -= Math.floor(this.height) * (increaseRate || this.increaseRate)
-        if (this.pollutedY <= 0) {
-          this.pollutedY = 0
-          this.gameResult = Contracts.LOST_THE_GAME
-        }
-      }
-      ,
+      },
+      setGameOvertimer () {
+        this.timer.gameover = 5 + Math.floor(Date.now() / 1000)
+      },
+      wonGame () {
+        this.setGameOvertimer()
+        this.gameResult = Contracts.WON_THE_GAME
+      },
+      lostGame () {
+        this.setGameOvertimer()
+        this.gameResult = Contracts.LOST_THE_GAME
+      },
       decreasePollutedArea () {
         this.pollutedY += Math.floor(this.height) * this.increaseRate
         if (this.pollutedY > this.height) {
           this.pollutedY = this.height
-          this.gameResult = Contracts.WON_THE_GAME
+          this.wonGame()
         }
-      }
-      ,
+      },
       drawCleanZone (ctx, y) {
         ctx.fillStyle = Contracts.COLOR_CLEAN_ZONE
         ctx.fillRect(0, 0, this.width, y)
-      }
-      ,
+      },
       drawPollutionZone (ctx, y) {
         ctx.fillStyle = Contracts.COLOR_POLLUTION_ZONE
         ctx.fillRect(0, y, this.width, this.height)
-      }
-      ,
+      },
       run () {
         window.requestAnimationFrame(this.run)
 

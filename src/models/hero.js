@@ -38,6 +38,7 @@ class Hero {
   }
 
   reset () {
+    // console.log('reset hero')
     this.demoMode = false
     this.initCountValue = 0
     this.props = {
