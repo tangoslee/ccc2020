@@ -1,7 +1,7 @@
 const INTRO_TEXT = `The C-Virus spread out whole over the world.\n
 Candy Lab finally developed the cure \nbut all crews have been infected except you.\n 
 Save the crews, save the world!\n
-Press "C" to Continue...\n
+Press "S" or after ##SEC## seconds to Continue...\n
 Controls: Spacebar, Left, Right`
 
 const BULLET_ICON = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAjVBMVEUAAADznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBLznBKABGUXAAAALnRSTlMAAQIFCw0QFBUXHh8nLi8zQEFCQ01OUFFWWGFmgIWUlZqdnqKjrb7AwcXZ8fn7iUnKGQAAALlJREFUOMvN1NsOgjAMBuAC4gEFQTyAgnhGBfv+j2cbE8lITW8k4b9YtuzLku4E0EVm6803y7FsQjQyEtHBRCsRXfDYDBCTjlBU1g6glAc4dRmxKWj0G1G7p3VQQxjBXUclvHRUf2YbtLAoiYmwjTyuxe8NChyKxcji3lZEA/Mo/Y6Ra6K5iG45ZcjzE+49e7PjU0aBgk4h5dpGlX7pKnpIKjqDpyMqJtZQzLW4aWZDLmUHdpa6//zd3iWRgHSXg34VAAAAAElFTkSuQmCC'
@@ -45,10 +45,15 @@ const WON_THE_GAME = 1
 const LOST_THE_GAME = -1
 const ON_THE_GAME = 0
 const INTRO_THE_GAME = 2
+const PLAY_DEMO = 3
 
 const KEY_CODE_C = 67
 const KEY_CODE_D = 68
+const KEY_CODE_P = 80
 const KEY_CODE_S = 83
+const KEY_CODE_SPACEBAR = 32
+const KEY_CODE_LEFT_ARROW = 37
+const KEY_CODE_RIGHT_ARROW = 39
 
 export default {
   INTRO_TEXT,
@@ -90,8 +95,13 @@ export default {
   LOST_THE_GAME,
   ON_THE_GAME,
   INTRO_THE_GAME,
+  PLAY_DEMO,
 
   KEY_CODE_C,
   KEY_CODE_D,
-  KEY_CODE_S
+  KEY_CODE_P,
+  KEY_CODE_S,
+  KEY_CODE_SPACEBAR,
+  KEY_CODE_LEFT_ARROW,
+  KEY_CODE_RIGHT_ARROW
 }

@@ -38,6 +38,9 @@ class Hero {
   }
 
   reset () {
+    // console.log('reset hero')
+    this.demoMode = false
+    this.initCountValue = 0
     this.props = {
       keys: [],
       velocityX: 0,
@@ -55,12 +58,21 @@ class Hero {
     this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})
   }
 
+  tick () {
+    return (Math.floor(Date.now() / 1000) % 30)
+  }
+
   updateKeyEvent (key, value) {
     this.props.keys[key] = value
   }
 
   getBullets () {
     return this.bullets
+  }
+
+  setDemoMode (demoMode) {
+    this.demoMode = demoMode
+    return this
   }
 
   addText (text) {
@@ -112,33 +124,59 @@ class Hero {
     return true
   }
 
+  getDemoControl () {
+    const ms = Date.now()
+    const k = Math.floor(ms / 240) % 240 % 10
+    const f = Math.floor(ms) % 10
+
+    // if (f < 1) {
+    //   console.log(ms, k, f)
+    // }
+
+    const xVelocity = (k > 6) ? -5 : 5
+    const fired = f < 1
+
+    return {
+      xVelocity,
+      fired
+    }
+  }
+
   show (pollutedY) {
     let { keys, velocityX, velocityInterval, speed, friction } = this.props
     let ctx = this.ctx
     let x = this.x
 
     // leftArrow
-    if (keys[37]) {
+    if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
       if (velocityX > -speed) {
         velocityX -= velocityInterval
       }
     }
 
     // rightArrow
-    if (keys[39]) {
+    if (keys[Contracts.KEY_CODE_RIGHT_ARROW]) {
       if (velocityX < speed) {
         velocityX += velocityInterval
       }
     }
 
+    //S: Control Demo
+    if (this.demoMode) {
+      const { xVelocity, fired } = this.getDemoControl()
+      velocityX = xVelocity
+      keys[Contracts.KEY_CODE_SPACEBAR] = fired
+    }
+    // E: Control Demo
+
     velocityX = Math.floor(velocityX) * friction
     x += velocityX
 
-    // console.log(velocityX)
+    // console.log('hero speed ', velocityX)
 
     if (x >= this.xLimit) {
       x = this.limitMargin
-    } else if (x <= this.limitMargin) {
+    } else if (x <= this.limitMargin - Math.floor(this.w / 2)) {
       x = this.xLimit
     }
 
@@ -147,10 +185,10 @@ class Hero {
     this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
 
     // fire by spacebar
-    if (keys[32]) {
+    if (keys[Contracts.KEY_CODE_SPACEBAR]) {
       const cText = ctx.measureText(this.text)
       // console.log(cText)
-      keys[32] = false
+      keys[Contracts.KEY_CODE_SPACEBAR] = false
       this.fire(ctx, x + this.w / 2 + cText.actualBoundingBoxLeft, this.y - this.h - 32)
     }
 
