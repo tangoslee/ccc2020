@@ -1,4 +1,4 @@
-import Bullet from '@/models/bullet'
+import Bullet from '@/models/Bullet'
 import Contracts from '@/Contracts'
 
 class Hero {

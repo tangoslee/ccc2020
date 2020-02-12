@@ -13,8 +13,8 @@
    */
 
   import Contracts from '@/Contracts'
-  import Hero from '@/models/hero'
-  import Monster from '@/models/monster'
+  import Hero from '@/models/Hero'
+  import Monster from '@/models/Monster'
 
   export default {
     name: 'AppMain',
@@ -32,11 +32,6 @@
         canvas: null,
         ctx: null,
         increaseRate: 0.1, // 10%
-        game: {
-          intro: null,
-          play: null,
-          ending: null
-        },
         timer: {
           intro: 0,
           gameover: 0
@@ -63,7 +58,7 @@
       this.gameResult = Contracts.INTRO_THE_GAME
       this.initBulletIcon()
       this.$nextTick(function () {
-        window.addEventListener('resize', this.handleResize)
+        window.addEventListener('resize', this.handleResizeEvent)
         window.addEventListener('keyup', this.updateKeyUpEvent)
         window.addEventListener('keydown', this.updateKeyDownEvent)
       })
@@ -72,16 +67,16 @@
       this.canvas = this.$refs.canvas
       this.ctx = this.canvas.getContext('2d')
 
-      this.handleResize()
+      this.handleResizeEvent()
       console.log('mounted', `${this.width}x${this.height}`)
     },
     methods: {
       random (min, max) {
         return Math.floor(Math.random() * max) + min
       },
-      handleResize () {
-        this.width = window.innerWidth - 1
-        this.height = window.innerHeight - 1
+      handleResizeEvent () {
+        this.width = window.innerWidth
+        this.height = window.innerHeight
         this.init()
       },
       requestFrame () {
@@ -99,7 +94,7 @@
         // console.log('canvas', canvas, ', ctx', this.ctx)
         this.demoMode = false
         this.timer = {
-          intro: 5 + Math.floor(Date.now() / 1000)
+          intro: 7 + Math.floor(Date.now() / 1000)
         }
 
         this.canvas.width = this.width
@@ -324,9 +319,9 @@
         if (!this.start) {
           this.start = timestamp
         }
-
         // let progress = Math.floor(timestamp - this.start)
-        // console.log('progress ', progress)
+        // let frameSeq = Math.floor((progress + 1) / 33)
+        // console.log('progress ', progress, ', idx:', frameSeq)
 
         if (this.ctx) {
 
@@ -343,7 +338,6 @@
           switch (true) {
             // Intro
             case (this.gameResult === Contracts.INTRO_THE_GAME):
-              // this.game.intro.run()
               this.showGameIntro({ ctx: this.ctx, pollutedY })
               break
             // case (this.gameResult === Contracts.PLAY_DEMO):
@@ -351,14 +345,12 @@
             //   break
             // Game Over
             case (this.gameResult !== Contracts.ON_THE_GAME) :
-              // this.game.ending.run()
               this.showGameInfo(this.ctx)
               this.showGameOver(this.ctx)
               break
             // Game On
             case (this.gameResult === Contracts.ON_THE_GAME) :
               // console.log('play', this.demoMode)
-              // this.game.play.run()
               this.showGameInfo(this.ctx)
               this.hero.setDemoMode(this.demoMode).show(pollutedY)
               this.dropMonsters(pollutedY)
@@ -368,7 +360,6 @@
         } // ctx
 
         this.requestFrame()
-
       } // run
 
     } // methods
