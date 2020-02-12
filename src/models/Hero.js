@@ -87,7 +87,7 @@ class Hero {
     this.bullets.push(new Bullet(ctx, x, y))
   }
 
-  drawHero (ctx, x, pollutedY) {
+  drawHero (ctx, x, virusBorderY) {
 
     ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
     ctx.fillStyle = this.color
@@ -96,7 +96,7 @@ class Hero {
 
     this.w = Math.floor(width)
     this.h = Math.floor(actualBoundingBoxAscent) + Math.floor(actualBoundingBoxDescent)
-    let y = Math.floor(pollutedY) + this.h - 10
+    let y = Math.floor(virusBorderY) + this.h - 10
     if (y > this.boxHeight - 10) {
       y = this.boxHeight - 10
     }
@@ -142,7 +142,7 @@ class Hero {
     }
   }
 
-  show (pollutedY) {
+  show (virusBorderY) {
     let { keys, velocityX, velocityInterval, speed, friction } = this.props
     let ctx = this.ctx
     let x = this.x
@@ -180,7 +180,7 @@ class Hero {
       x = this.xLimit
     }
 
-    this.drawHero(ctx, x, pollutedY)
+    this.drawHero(ctx, x, virusBorderY)
 
     this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
 

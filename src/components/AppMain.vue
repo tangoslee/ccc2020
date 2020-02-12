@@ -26,9 +26,9 @@
         margin: 20,
         hero: null,
         hitScore: 0,
-        gameResult: 0,
+        gameMode: 0,
         monsters: [],
-        pollutedY: 0,
+        virusBorderY: 0,
         canvas: null,
         ctx: null,
         increaseRate: 0.1, // 10%
@@ -55,7 +55,7 @@
     },
     created () {
       // console.log('created')
-      this.gameResult = Contracts.INTRO_THE_GAME
+      this.gameMode = Contracts.INTRO_THE_GAME
       this.initBulletIcon()
       this.$nextTick(function () {
         window.addEventListener('resize', this.handleResizeEvent)
@@ -104,7 +104,7 @@
         this.requestFrame()
       },
       initGame () {
-        this.pollutedY = Math.floor(this.height) * 0.8
+        this.virusBorderY = Math.floor(this.height * 0.8)
         this.hitScore = 0
         if (this.hero) {
           this.hero.reset()
@@ -114,7 +114,7 @@
         // Create monsters
         this.monsters = []
         'ANDY'.split('').forEach(ch => {
-          const monster = new Monster(this.ctx, this.width, this.pollutedY).setText(ch)
+          const monster = new Monster(this.ctx, this.width, this.virusBorderY).setText(ch)
           this.monsters.push(monster)
         })
       },
@@ -138,7 +138,7 @@
         // console.log(keyCode)
         if (keyCode === Contracts.KEY_CODE_P) {
           this.togglePause()
-        } else if (this.gameResult === Contracts.ON_THE_GAME) {
+        } else if (this.gameMode === Contracts.ON_THE_GAME) {
           this.hero.updateKeyEvent(keyCode, false)
         } else if (keyCode === Contracts.KEY_CODE_S) {
           this.startGame()
@@ -159,8 +159,8 @@
         // ctx.clearRect(0, 0, this.width, this.height)
         // ctx.beginPath()
         //
-        // this.drawCleanZone(ctx, pollutedY)
-        // this.drawPollutionZone(ctx, pollutedY)
+        // this.drawCleanZone(ctx, virusBorderY)
+        // this.drawPollutionZone(ctx, virusBorderY)
         const seconds = Math.floor(this.timer.intro) - Math.floor(Date.now() / 1000)
         const introTexts = Contracts.INTRO_TEXT
           .replace('##SEC##', `${seconds}`)
@@ -187,27 +187,27 @@
 
         let font = Contracts.FONT_LOSE_GAME
         let color = Contracts.COLOR_LOSE_GAME
-        let gameResultText = 'Game Over'
+        let gameModeText = 'Game Over'
 
-        if (this.gameResult === Contracts.WON_THE_GAME) {
+        if (this.gameMode === Contracts.WON_THE_GAME) {
           font = Contracts.FONT_WON_GAME
           color = Contracts.COLOR_WON_GAME
-          gameResultText = 'You Won!'
+          gameModeText = 'You Won!'
         }
 
-        // const font = this.gameResult === Contracts.WON_THE_GAME ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
-        // const color = this.gameResult === Contracts.WON_THE_GAME ? Contracts.COLOR_WON_GAME : Contracts.COLOR_LOSE_GAME
-        // const gameResultText = this.gameResult === Contracts.WON_THE_GAME ? 'You Won!' : 'Game Over'
+        // const font = this.gameMode === Contracts.WON_THE_GAME ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
+        // const color = this.gameMode === Contracts.WON_THE_GAME ? Contracts.COLOR_WON_GAME : Contracts.COLOR_LOSE_GAME
+        // const gameModeText = this.gameMode === Contracts.WON_THE_GAME ? 'You Won!' : 'Game Over'
 
         const pressToStartText = 'Press "S" to Start'
 
         ctx.font = `bold 96px ${font}`
         ctx.fillStyle = `${color}`
 
-        const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameResultText).width / 2
+        const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameModeText).width / 2
         const y = Math.floor(this.height) * 0.5
 
-        ctx.fillText(gameResultText, x, y)
+        ctx.fillText(gameModeText, x, y)
 
         ctx.font = `bold 36px ${font}`
         ctx.fillText(pressToStartText, x, y + 96)
@@ -217,15 +217,15 @@
 
         if (seconds <= 0) {
           // console.log('time over')
-          this.gameResult = Contracts.INTRO_THE_GAME
+          this.gameMode = Contracts.INTRO_THE_GAME
           this.init()
         }
 
       },
       increasePollutedArea (increaseRate = null) {
-        this.pollutedY -= Math.floor(this.height) * (increaseRate || this.increaseRate)
-        if (this.pollutedY <= 0) {
-          this.pollutedY = 0
+        this.virusBorderY -= Math.floor(this.height * (increaseRate || this.increaseRate))
+        if (this.virusBorderY <= 0) {
+          this.virusBorderY = 0
           this.lostGame()
         }
       },
@@ -242,7 +242,7 @@
 
         ctx.fillText(gameInfoText, x, y)
       },
-      dropMonsters (pollutedY) {
+      dropMonsters (virusBorderY) {
         // console.log('monsters', this.monsters.length)
         this.monsters.forEach(monster => {
           monster.show()
@@ -260,7 +260,7 @@
               // TODO quack sound
               this.lostGame()
             }
-          } else if (monster.drop(pollutedY)) {
+          } else if (monster.drop(virusBorderY)) {
             this.increasePollutedArea()
           }
         })
@@ -268,35 +268,35 @@
       startDemo () {
         this.demoMode = true
         this.increaseRate = 0.1
-        this.gameResult = Contracts.ON_THE_GAME
+        this.gameMode = Contracts.ON_THE_GAME
         this.resetMonsters()
         this.initGame()
       },
       startGame () {
         this.demoMode = false
         this.increaseRate = 0.01
-        this.gameResult = Contracts.ON_THE_GAME
+        this.gameMode = Contracts.ON_THE_GAME
         this.resetMonsters()
         this.initGame()
       },
       continueGame () {
-        this.gameResult = Contracts.ON_THE_GAME
+        this.gameMode = Contracts.ON_THE_GAME
       },
       setGameOvertimer () {
         this.timer.gameover = 5 + Math.floor(Date.now() / 1000)
       },
       wonGame () {
         this.setGameOvertimer()
-        this.gameResult = Contracts.WON_THE_GAME
+        this.gameMode = Contracts.WON_THE_GAME
       },
       lostGame () {
         this.setGameOvertimer()
-        this.gameResult = Contracts.LOST_THE_GAME
+        this.gameMode = Contracts.LOST_THE_GAME
       },
       decreasePollutedArea () {
-        this.pollutedY += Math.floor(this.height) * this.increaseRate
-        if (this.pollutedY > this.height) {
-          this.pollutedY = this.height
+        this.virusBorderY += Math.floor(this.height * this.increaseRate)
+        if (this.virusBorderY > this.height) {
+          this.virusBorderY = this.height
           this.wonGame()
         }
       },
@@ -319,41 +319,42 @@
         if (!this.start) {
           this.start = timestamp
         }
-        // let progress = Math.floor(timestamp - this.start)
-        // let frameSeq = Math.floor((progress + 1) / 33)
+
+        let progress = Math.floor(timestamp - this.start)
+        let frameSeq = Math.floor((progress + 1) / 33)
         // console.log('progress ', progress, ', idx:', frameSeq)
 
         if (this.ctx) {
 
-          const pollutedY = Math.floor(this.pollutedY)
+          const virusBorderY = Math.floor(this.virusBorderY)
 
           // Clean area
           this.ctx.clearRect(0, 0, this.width, this.height)
           this.ctx.beginPath()
 
-          this.drawCleanZone(this.ctx, pollutedY)
-          this.drawPollutionZone(this.ctx, pollutedY)
+          this.drawCleanZone(this.ctx, virusBorderY)
+          this.drawPollutionZone(this.ctx, virusBorderY)
 
-          // console.log('gameResult:', this.gameResult)
+          // console.log('gameMode:', this.gameMode)
           switch (true) {
             // Intro
-            case (this.gameResult === Contracts.INTRO_THE_GAME):
-              this.showGameIntro({ ctx: this.ctx, pollutedY })
+            case (this.gameMode === Contracts.INTRO_THE_GAME):
+              this.showGameIntro({ ctx: this.ctx, virusBorderY })
               break
-            // case (this.gameResult === Contracts.PLAY_DEMO):
+            // case (this.gameMode === Contracts.PLAY_DEMO):
             //   this.startDemo()
             //   break
             // Game Over
-            case (this.gameResult !== Contracts.ON_THE_GAME) :
+            case (this.gameMode !== Contracts.ON_THE_GAME) :
               this.showGameInfo(this.ctx)
               this.showGameOver(this.ctx)
               break
             // Game On
-            case (this.gameResult === Contracts.ON_THE_GAME) :
+            case (this.gameMode === Contracts.ON_THE_GAME) :
               // console.log('play', this.demoMode)
               this.showGameInfo(this.ctx)
-              this.hero.setDemoMode(this.demoMode).show(pollutedY)
-              this.dropMonsters(pollutedY)
+              this.hero.setDemoMode(this.demoMode).show(virusBorderY)
+              this.dropMonsters(virusBorderY)
               break
           }
 
