@@ -25,21 +25,20 @@
         pause: false,
         width: 512,
         height: 512,
-        margin: 20,
+        // margin: 20,
         game: null,
         hero: null,
-        hitScore: 0,
-        hitScoreInterval: 10,
-        gameMode: 0,
         monsters: null,
-        virusBorderY: 0,
+        // hitScore: 0,
+        // hitScoreInterval: 10,
+        gameMode: 0,
         canvas: null,
         ctx: null,
         increaseRate: 0.1, // 10%
-        timer: {
-          intro: 0,
-          gameover: 0
-        },
+        // timer: {
+        //   intro: 0,
+        //   gameover: 0
+        // },
         demoMode: false,
         start: null,
         frame1: null,
@@ -114,24 +113,13 @@
         this.canvas.width = this.width
         this.canvas.height = this.height
         this.game.initGame()
-        // this.initGame()
-        this.initMonsters()
+        this.monsters.init(this.ctx, this.width, this.height)
         this.requestFrame()
-      },
-      initMonsters () {
-        // Create monsters
-        this.monsters.init(this.ctx, this.width, this.virusBorderY)
-      },
-      resetMonsters () {
-        // this.monsters.map(monster => monster.reset())
-        this.monsters.reset()
       },
       initBulletIcon () {
         const image = new Image()
         image.src = Contracts.BULLET_ICON
         image.onload = () => {
-          // @deprecated
-          //this.initHero(image)
           this.hero.setBulletIcon(image)
           console.log('bullet image loaded')
         }
@@ -145,12 +133,7 @@
         // console.log('upKey', keyCode, this.gameMode)
         if (keyCode === Contracts.KEY_CODE_P) {
           return this.togglePause()
-          // } else if (this.gameMode === Contracts.ON_THE_GAME) {
-          //   console.log('updateKeyUpEvent')
-          //   this.hero.updateKeyEvent(keyCode, false)
         } else if (keyCode === Contracts.KEY_CODE_S) {
-          // TODO make pub/sub store
-          // this.gameMode = Contracts.ON_THE_GAME
           return this.game.startGame()
         } else if (keyCode === Contracts.KEY_CODE_D) {
           return this.game.startDemo()
@@ -167,20 +150,8 @@
         }
       },
       continueGame () {
-        // this.gameMode = Contracts.ON_THE_GAME
         this.pause = false
         this.requestFrame()
-      },
-      setGameOvertimer () {
-        this.timer.gameover = 5 + Math.floor(Date.now() / 1000)
-      },
-      wonGame () {
-        this.setGameOvertimer()
-        this.gameMode = Contracts.WON_THE_GAME
-      },
-      lostGame () {
-        this.setGameOvertimer()
-        this.gameMode = Contracts.LOST_THE_GAME
       },
 
       /**
@@ -189,7 +160,7 @@
        * @param timestamp
        */
       run (timestamp) {
-        console.log('AppMain.run()', { gameMode: this.gameMode, width: this.width, height: this.height })
+        // console.log('AppMain.run()', { gameMode: this.gameMode, width: this.width, height: this.height })
         // console.log((new Date()).getSeconds())
         // console.log('timestamp', timestamp)
         if (!this.start) {
@@ -201,16 +172,14 @@
         // console.log('progress ', progress, ', idx:', frameSeq)
 
         if (this.ctx) {
-
-          // const virusBorderY = this.virusBorderY
-          // console.log({ gameMode: this.gameMode, virusBorderY: this.virusBorderY })
-
           this.game
             .run({
+                timestamp,
+                progress,
+                frameSeq,
                 ctx: this.ctx,
                 width: this.width,
                 height: this.height,
-                // virusBorderY: this.virusBorderY,
                 gameMode: this.gameMode,
                 increaseRate: this.increaseRate
               }

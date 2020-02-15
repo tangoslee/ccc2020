@@ -6,7 +6,7 @@ class Monster {
 
     this.ctx = ctx
     this.width = width
-    this.height = height + 100 // + 115
+    this.height = height
 
     this.initY = -this.random(0, 500)
     this.friction = 0.9
@@ -75,7 +75,7 @@ class Monster {
     this.h = Math.floor(actualBoundingBoxAscent) + actualBoundingBoxDescent
   }
 
-  drop (limit = this.height) {
+  drop (limit) {
     // this.velocityY = this.speed
     this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 4)
     this.velocityY = Math.floor(this.velocityY) * this.friction

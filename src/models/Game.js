@@ -18,6 +18,10 @@ class Game {
     this.hitScore = 0
     this.gameMode = null
 
+    // timer
+    this.introTimer = null
+    this.endingTimer = null
+
   }
 
   // resize (width, height) {
@@ -38,6 +42,9 @@ class Game {
     if (this.hero) {
       this.hero.reset()
     }
+
+    this.introTimer = null
+    this.endingTimer = null
   }
 
   setHero (hero) {
@@ -101,11 +108,22 @@ class Game {
     ctx.fillText(gameInfoText, x, y)
   }
 
-  showGameIntro ({ ctx }) {
+  showGameIntro ({ ctx, virusBorderY, timestamp, progress, frameSeq }) {
     const { width, height } = this.cfg
 
-    // const seconds = Math.floor(this.timer.intro) - Math.floor(Date.now() / 1000)
-    const seconds = 1
+    if (this.introTimer === null) {
+      this.introTimer = {
+        diff: timestamp - (new Date(timestamp)).getSeconds(),
+        timer: 7
+      }
+    }
+    const { diff, timer } = this.introTimer
+    const seconds = timer - (new Date(timestamp - diff)).getSeconds()
+
+    if (seconds <= 0) {
+      return this.startDemo()
+    }
+
     const introTexts = Contracts.INTRO_TEXT
       .replace('##SEC##', `${seconds}`)
       .split('\n')
@@ -130,16 +148,23 @@ class Game {
       lineHeight += lineHeightInterval
     }
 
-    if (seconds <= 0) {
-      this.startDemo()
-    }
   }
 
-  showGameEnding (ctx) {
+  showGameEnding ({ ctx, timestamp }) {
     const { width, height } = this.cfg
 
-    // const seconds = Math.floor(this.timer.gameover) - Math.floor(Date.now() / 1000)
-    const seconds = 1
+    if (this.introTimer === null) {
+      this.introTimer = {
+        diff: timestamp - (new Date(timestamp)).getSeconds(),
+        timer: 7
+      }
+    }
+    const { diff, timer } = this.introTimer
+    const seconds = timer - (new Date(timestamp - diff)).getSeconds()
+
+    if (seconds <= 0) {
+      return this.gameMode = Contracts.INTRO_THE_GAME
+    }
 
     let font = Contracts.FONT_LOSE_GAME
     let color = Contracts.COLOR_LOSE_GAME
@@ -167,12 +192,6 @@ class Game {
     ctx.font = `24px ${font}`
     ctx.fillText(`Continue to after ${seconds} second${seconds !== 1 ? 's' : ''}`, x, y + 140)
 
-    if (seconds <= 0) {
-      // console.log('time over')
-      // this.gameMode = Contracts.INIT_THE_GAME
-      this.gameMode = Contracts.INTRO_THE_GAME
-      // this.init()
-    }
   }
 
   increasePollutedArea (increaseRate = null) {
@@ -233,7 +252,7 @@ class Game {
   }
 
   async run (cfg) {
-    const { ctx, width, height } = cfg
+    const { ctx, width, height, timestamp, progress, frameSeq } = cfg
 
     const gameMode = this.gameMode || cfg.gameMode
     this.gameMode = gameMode
@@ -247,7 +266,7 @@ class Game {
 
     const virusBorderY = this.cfg.virusBorderY
 
-    console.log({ 'game run': this.cfg, 'gameMode': gameMode, 'demoMode': this.demoMode, virusBorderY })
+    // console.log({ 'game run': this.cfg, 'gameMode': gameMode, 'demoMode': this.demoMode, virusBorderY })
 
     this.clearScreen(ctx, width, height)
 
@@ -257,37 +276,37 @@ class Game {
     switch (true) {
       // init
       case (gameMode === Contracts.INIT_THE_GAME):
-        console.log('init game')
+        // console.log('init game')
         return {
           callback: Contracts.INIT_THE_GAME
         }
       // Intro
       case (gameMode === Contracts.INTRO_THE_GAME):
-        console.log('intro game')
-        this.showGameIntro({ ctx, virusBorderY })
+        // console.log('intro game')
+        this.showGameIntro({ ctx, virusBorderY, timestamp, progress, frameSeq })
         return {}
       case (gameMode !== Contracts.ON_THE_GAME):
-        console.log('end game')
+        // console.log('end game')
         this.showGameInfo(ctx, virusBorderY)
-        this.showGameEnding(ctx)
+        this.showGameEnding({ ctx, timestamp })
         return {}
       // Game On
       case (gameMode === Contracts.ON_THE_GAME):
         // console.log('play', this.demoMode)
-        console.log('play game')
+        // console.log('play game')
         this.showGameInfo(ctx, virusBorderY)
         this.hero.run(virusBorderY, this.demoMode)
         this.monsters
           .run(virusBorderY)
           .then(response => {
             const { callback, value } = response || { callback: null, value: null }
-            console.log('monsters callback:', { callback, value })
+            // console.log('monsters callback:', { callback, value })
             switch (true) {
               // case callback === Contracts.INIT_THE_GAME:
               //   this.init()
               //   break
               case callback === 'decreasePollutedArea':
-                console.log('call decreasePollutedArea', { callback })
+                // console.log('call decreasePollutedArea', { callback })
                 this.decreasePollutedArea()
                 break
               case callback === 'increasePollutedArea':

@@ -11,11 +11,11 @@ class Monsters {
     return this
   }
 
-  init (ctx, width, virusBorderY) {
+  init (ctx, width, height) {
     // Create monsters
     this.monsters = []
     'ANDY'.split('').forEach(ch => {
-      const monster = new Monster(ctx, width, virusBorderY).setText(ch)
+      const monster = new Monster(ctx, width, height).setText(ch)
       this.monsters.push(monster)
     })
   }
