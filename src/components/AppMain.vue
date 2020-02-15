@@ -26,6 +26,7 @@
         margin: 20,
         hero: null,
         hitScore: 0,
+        hitScoreInterval: 10,
         gameMode: 0,
         monsters: [],
         virusBorderY: 0,
@@ -75,8 +76,8 @@
         return Math.floor(Math.random() * max) + min
       },
       handleResizeEvent () {
-        this.width = window.innerWidth
-        this.height = window.innerHeight
+        this.width = window.innerWidth - 1
+        this.height = window.innerHeight - 1
         this.init()
       },
       requestFrame () {
@@ -182,7 +183,7 @@
           this.startDemo()
         }
       },
-      showGameOver (ctx) {
+      showGameEnding (ctx) {
         const seconds = Math.floor(this.timer.gameover) - Math.floor(Date.now() / 1000)
 
         let font = Contracts.FONT_LOSE_GAME
@@ -194,10 +195,6 @@
           color = Contracts.COLOR_WON_GAME
           gameModeText = 'You Won!'
         }
-
-        // const font = this.gameMode === Contracts.WON_THE_GAME ? Contracts.FONT_WON_GAME : Contracts.FONT_LOSE_GAME
-        // const color = this.gameMode === Contracts.WON_THE_GAME ? Contracts.COLOR_WON_GAME : Contracts.COLOR_LOSE_GAME
-        // const gameModeText = this.gameMode === Contracts.WON_THE_GAME ? 'You Won!' : 'Game Over'
 
         const pressToStartText = 'Press "S" to Start'
 
@@ -229,10 +226,14 @@
           this.lostGame()
         }
       },
-      showGameInfo (ctx) {
+      showGameInfo (ctx, virusBorderY) {
+        const virusPollutionDegree = Math.floor((this.height - virusBorderY) / this.height * 100)
+        // console.log('virusPollutionDegree', virusPollutionDegree, virusBorderY, this.height)
+        const crewSaved = this.hero.text.length - 1
+
         const damageText = `${this.hero.damage}/${this.hero.maxDamage}`
         const hitScoreText = `${this.hitScore}`.padStart(5, '0')
-        const gameInfoText = `DAMAGE: ${damageText} SCORE: ${hitScoreText}`
+        const gameInfoText = `POLLUTION: ${virusPollutionDegree}/100 DAMAGE: ${damageText} SCORE: ${hitScoreText} CREW: ${crewSaved}/4`
 
         ctx.font = `bold 36px ${Contracts.FONT_GAME_INFO}`
         ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
@@ -248,7 +249,7 @@
           monster.show()
 
           if (monster.isHit(this.hero.getBullets())) {
-            this.hitScore++
+            this.hitScore += this.hitScoreInterval
             monster.transformToHero(this.hero)
             this.decreasePollutedArea()
           } else if (monster.hitHero(this.hero)) {
@@ -326,7 +327,7 @@
 
         if (this.ctx) {
 
-          const virusBorderY = Math.floor(this.virusBorderY)
+          const virusBorderY = this.virusBorderY
 
           // Clean area
           this.ctx.clearRect(0, 0, this.width, this.height)
@@ -346,13 +347,13 @@
             //   break
             // Game Over
             case (this.gameMode !== Contracts.ON_THE_GAME) :
-              this.showGameInfo(this.ctx)
-              this.showGameOver(this.ctx)
+              this.showGameInfo(this.ctx, virusBorderY)
+              this.showGameEnding(this.ctx)
               break
             // Game On
             case (this.gameMode === Contracts.ON_THE_GAME) :
               // console.log('play', this.demoMode)
-              this.showGameInfo(this.ctx)
+              this.showGameInfo(this.ctx, virusBorderY)
               this.hero.setDemoMode(this.demoMode).show(virusBorderY)
               this.dropMonsters(virusBorderY)
               break

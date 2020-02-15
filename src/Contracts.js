@@ -19,7 +19,7 @@ const FONT_HERO = 'Poller One'
 // font-family: 'VT323', monospace;
 const FONT_GAME_INFO = 'VT323'
 
-const FONT_SIZE_HERO = 160
+const FONT_SIZE_HERO = 96
 
 const COLOR_WON_GAME = '#000'
 const COLOR_LOSE_GAME = '#c0392b'

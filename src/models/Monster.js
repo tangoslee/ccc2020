@@ -27,7 +27,7 @@ class Monster {
     this.velocityY = 0
     this.speed = this.random(1, 10)
     this.x = this.random(100, (this.width - 200))
-    this.size = Math.round(this.random(50, 160))
+    this.size = Math.round(this.random(50, 96))
     this.font = fonts[this.random(0, fonts.length - 1)]
     this.y = Math.floor(this.initY)
     this.release = false
