@@ -1,6 +1,6 @@
 <template>
   <main role="main" class="fixed-top">
-    <canvas ref="canvas"></canvas>
+    <canvas ref="canvas"/>
   </main>
 </template>
 
@@ -13,8 +13,10 @@
    */
 
   import Contracts from '@/Contracts'
+  import Game from '@/models/Game'
   import Hero from '@/models/Hero'
   import Monster from '@/models/Monster'
+  import Monsters from '@/models/Monsters'
 
   export default {
     name: 'AppMain',
@@ -24,11 +26,12 @@
         width: 512,
         height: 512,
         margin: 20,
+        game: null,
         hero: null,
         hitScore: 0,
         hitScoreInterval: 10,
         gameMode: 0,
-        monsters: [],
+        monsters: null,
         virusBorderY: 0,
         canvas: null,
         ctx: null,
@@ -56,8 +59,16 @@
     },
     created () {
       // console.log('created')
+      this.game = new Game()
+      this.hero = new Hero()
+      this.monsters = new Monsters()
+      this.monsters.setHero(this.hero)
+      this.game
+        .setHero(this.hero)
+        .setMonsters(this.monsters)
       this.gameMode = Contracts.INTRO_THE_GAME
       this.initBulletIcon()
+
       this.$nextTick(function () {
         window.addEventListener('resize', this.handleResizeEvent)
         window.addEventListener('keyup', this.updateKeyUpEvent)
@@ -69,6 +80,8 @@
       this.ctx = this.canvas.getContext('2d')
 
       this.handleResizeEvent()
+      // this.game.resize(this.width, this.height)
+      this.hero.setGame(this.ctx, this.width, this.height)
       console.log('mounted', `${this.width}x${this.height}`)
     },
     methods: {
@@ -100,35 +113,47 @@
 
         this.canvas.width = this.width
         this.canvas.height = this.height
-        this.initGame()
+        // this.gameMode = Contracts.INTRO_THE_GAME
+        // this.virusBorderY = Math.floor(this.height * 0.8)
+        this.game.initGame()
+        // this.initGame()
         this.initMonsters()
         this.requestFrame()
       },
-      initGame () {
-        this.virusBorderY = Math.floor(this.height * 0.8)
-        this.hitScore = 0
-        if (this.hero) {
-          this.hero.reset()
-        }
-      },
+      // @deprecated
+      // initGame () {
+      //   this.virusBorderY = Math.floor(this.height * 0.8)
+      //   this.hitScore = 0
+      //   if (this.hero) {
+      //     this.hero.reset()
+      //   }
+      // },
       initMonsters () {
         // Create monsters
-        this.monsters = []
-        'ANDY'.split('').forEach(ch => {
-          const monster = new Monster(this.ctx, this.width, this.virusBorderY).setText(ch)
-          this.monsters.push(monster)
-        })
+        this.monsters.init(this.ctx, this.width, this.virusBorderY)
+        // this.monsters = []
+        // 'ANDY'.split('').forEach(ch => {
+        //   const monster = new Monster(this.ctx, this.width, this.virusBorderY).setText(ch)
+        //   this.monsters.push(monster)
+        // })
       },
       resetMonsters () {
-        this.monsters.map(monster => monster.reset())
+        // this.monsters.map(monster => monster.reset())
+        this.monsters.reset()
       },
-      initHero (bulletIcon) {
-        this.hero = new Hero(this.ctx, this.width, this.height, { bulletIcon })
-      },
+      // @deprecated
+      // initHero (bulletIcon) {
+      //   this.hero = new Hero(this.ctx, this.width, this.height, { bulletIcon })
+      // },
       initBulletIcon () {
         const image = new Image()
         image.src = Contracts.BULLET_ICON
-        image.onload = () => this.initHero(image)
+        image.onload = () => {
+          // @deprecated
+          //this.initHero(image)
+          this.hero.setBulletIcon(image)
+          console.log('bullet image loaded')
+        }
       },
       updateKeyDownEvent (event) {
         const { keyCode } = event
@@ -136,18 +161,22 @@
       },
       updateKeyUpEvent (event) {
         const { keyCode } = event
-        // console.log(keyCode)
+        // console.log('upKey', keyCode, this.gameMode)
         if (keyCode === Contracts.KEY_CODE_P) {
-          this.togglePause()
-        } else if (this.gameMode === Contracts.ON_THE_GAME) {
-          this.hero.updateKeyEvent(keyCode, false)
+          return this.togglePause()
+          // } else if (this.gameMode === Contracts.ON_THE_GAME) {
+          //   console.log('updateKeyUpEvent')
+          //   this.hero.updateKeyEvent(keyCode, false)
         } else if (keyCode === Contracts.KEY_CODE_S) {
-          this.startGame()
+          // TODO make pub/sub store
+          // this.gameMode = Contracts.ON_THE_GAME
+          return this.game.startGame()
         } else if (keyCode === Contracts.KEY_CODE_D) {
-          this.startDemo()
+          return this.game.startDemo()
         } else if (keyCode === Contracts.KEY_CODE_C) {
-          this.continueGame()
+          return this.continueGame()
         }
+        this.hero.updateKeyEvent(keyCode, false)
       },
       togglePause () {
         this.pause = !this.pause
@@ -156,132 +185,138 @@
           this.requestFrame()
         }
       },
-      showGameIntro ({ ctx }) {
-        // ctx.clearRect(0, 0, this.width, this.height)
-        // ctx.beginPath()
-        //
-        // this.drawCleanZone(ctx, virusBorderY)
-        // this.drawPollutionZone(ctx, virusBorderY)
-        const seconds = Math.floor(this.timer.intro) - Math.floor(Date.now() / 1000)
-        const introTexts = Contracts.INTRO_TEXT
-          .replace('##SEC##', `${seconds}`)
-          .split('\n')
-
-        ctx.font = `bold 36px ${Contracts.FONT_GAME_INFO}`
-        ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
-
-        let lineHeight = 36
-        for (let introText of introTexts) {
-          const x = Math.floor(this.width) * 0.5 - ctx.measureText(introText).width / 2
-          const y = Math.floor(this.height) * 0.1
-
-          ctx.fillText(introText, x, y + lineHeight)
-          lineHeight += 36
-        }
-
-        if (seconds <= 0) {
-          this.startDemo()
-        }
-      },
-      showGameEnding (ctx) {
-        const seconds = Math.floor(this.timer.gameover) - Math.floor(Date.now() / 1000)
-
-        let font = Contracts.FONT_LOSE_GAME
-        let color = Contracts.COLOR_LOSE_GAME
-        let gameModeText = 'Game Over'
-
-        if (this.gameMode === Contracts.WON_THE_GAME) {
-          font = Contracts.FONT_WON_GAME
-          color = Contracts.COLOR_WON_GAME
-          gameModeText = 'You Won!'
-        }
-
-        const pressToStartText = 'Press "S" to Start'
-
-        ctx.font = `bold 96px ${font}`
-        ctx.fillStyle = `${color}`
-
-        const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameModeText).width / 2
-        const y = Math.floor(this.height) * 0.5
-
-        ctx.fillText(gameModeText, x, y)
-
-        ctx.font = `bold 36px ${font}`
-        ctx.fillText(pressToStartText, x, y + 96)
-
-        ctx.font = `24px ${font}`
-        ctx.fillText(`Continue to after ${seconds} second${seconds !== 1 ? 's' : ''}`, x, y + 140)
-
-        if (seconds <= 0) {
-          // console.log('time over')
-          this.gameMode = Contracts.INTRO_THE_GAME
-          this.init()
-        }
-
-      },
-      increasePollutedArea (increaseRate = null) {
-        this.virusBorderY -= Math.floor(this.height * (increaseRate || this.increaseRate))
-        if (this.virusBorderY <= 0) {
-          this.virusBorderY = 0
-          this.lostGame()
-        }
-      },
-      showGameInfo (ctx, virusBorderY) {
-        const virusPollutionDegree = Math.floor((this.height - virusBorderY) / this.height * 100)
-        // console.log('virusPollutionDegree', virusPollutionDegree, virusBorderY, this.height)
-        const crewSaved = this.hero.text.length - 1
-
-        const damageText = `${this.hero.damage}/${this.hero.maxDamage}`
-        const hitScoreText = `${this.hitScore}`.padStart(5, '0')
-        const gameInfoText = `POLLUTION: ${virusPollutionDegree}/100 DAMAGE: ${damageText} SCORE: ${hitScoreText} CREW: ${crewSaved}/4`
-
-        ctx.font = `bold 36px ${Contracts.FONT_GAME_INFO}`
-        ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
-
-        const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameInfoText).width / 2
-        const y = Math.floor(this.height) * 0.1
-
-        ctx.fillText(gameInfoText, x, y)
-      },
-      dropMonsters (virusBorderY) {
-        // console.log('monsters', this.monsters.length)
-        this.monsters.forEach(monster => {
-          monster.show()
-
-          if (monster.isHit(this.hero.getBullets())) {
-            this.hitScore += this.hitScoreInterval
-            monster.transformToHero(this.hero)
-            this.decreasePollutedArea()
-          } else if (monster.hitHero(this.hero)) {
-            monster.reset()
-            if (this.hero.decreaseHealth()) {
-              this.increasePollutedArea(0.1)
-            } else {
-              // gameOver
-              // TODO quack sound
-              this.lostGame()
-            }
-          } else if (monster.drop(virusBorderY)) {
-            this.increasePollutedArea()
-          }
-        })
-      },
-      startDemo () {
-        this.demoMode = true
-        this.increaseRate = 0.1
-        this.gameMode = Contracts.ON_THE_GAME
-        this.resetMonsters()
-        this.initGame()
-      },
-      startGame () {
-        this.demoMode = false
-        this.increaseRate = 0.01
-        this.gameMode = Contracts.ON_THE_GAME
-        this.resetMonsters()
-        this.initGame()
-      },
+      // @deprecated
+      // showGameIntro ({ ctx }) {
+      //   // ctx.clearRect(0, 0, this.width, this.height)
+      //   // ctx.beginPath()
+      //   //
+      //   // this.drawCleanZone(ctx, virusBorderY)
+      //   // this.drawPollutionZone(ctx, virusBorderY)
+      //   const seconds = Math.floor(this.timer.intro) - Math.floor(Date.now() / 1000)
+      //   const introTexts = Contracts.INTRO_TEXT
+      //     .replace('##SEC##', `${seconds}`)
+      //     .split('\n')
+      //
+      //   ctx.font = `bold 36px ${Contracts.FONT_GAME_INFO}`
+      //   ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
+      //
+      //   let lineHeight = 36
+      //   for (let introText of introTexts) {
+      //     const x = Math.floor(this.width) * 0.5 - ctx.measureText(introText).width / 2
+      //     const y = Math.floor(this.height) * 0.1
+      //
+      //     ctx.fillText(introText, x, y + lineHeight)
+      //     lineHeight += 36
+      //   }
+      //
+      //   if (seconds <= 0) {
+      //     this.startDemo()
+      //   }
+      // },
+      // @deprecated
+      // showGameEnding (ctx) {
+      //   const seconds = Math.floor(this.timer.gameover) - Math.floor(Date.now() / 1000)
+      //
+      //   let font = Contracts.FONT_LOSE_GAME
+      //   let color = Contracts.COLOR_LOSE_GAME
+      //   let gameModeText = 'Game Over'
+      //
+      //   if (this.gameMode === Contracts.WON_THE_GAME) {
+      //     font = Contracts.FONT_WON_GAME
+      //     color = Contracts.COLOR_WON_GAME
+      //     gameModeText = 'You Won!'
+      //   }
+      //
+      //   const pressToStartText = 'Press "S" to Start'
+      //
+      //   ctx.font = `bold 96px ${font}`
+      //   ctx.fillStyle = `${color}`
+      //
+      //   const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameModeText).width / 2
+      //   const y = Math.floor(this.height) * 0.5
+      //
+      //   ctx.fillText(gameModeText, x, y)
+      //
+      //   ctx.font = `bold 36px ${font}`
+      //   ctx.fillText(pressToStartText, x, y + 96)
+      //
+      //   ctx.font = `24px ${font}`
+      //   ctx.fillText(`Continue to after ${seconds} second${seconds !== 1 ? 's' : ''}`, x, y + 140)
+      //
+      //   if (seconds <= 0) {
+      //     // console.log('time over')
+      //     this.gameMode = Contracts.INTRO_THE_GAME
+      //     this.init()
+      //   }
+      //
+      // },
+      //@deprecated
+      // increasePollutedArea (increaseRate = null) {
+      //   this.virusBorderY -= Math.floor(this.height * (increaseRate || this.increaseRate))
+      //   if (this.virusBorderY <= 0) {
+      //     this.virusBorderY = 0
+      //     this.lostGame()
+      //   }
+      // },
+      // @deprecated
+      // showGameInfo (ctx, virusBorderY) {
+      //   const virusPollutionDegree = Math.floor((this.height - virusBorderY) / this.height * 100)
+      //   // console.log('virusPollutionDegree', virusPollutionDegree, virusBorderY, this.height)
+      //   const crewSaved = this.hero.text.length - 1
+      //
+      //   const damageText = `${this.hero.damage}/${this.hero.maxDamage}`
+      //   const hitScoreText = `${this.hitScore}`.padStart(5, '0')
+      //   const gameInfoText = `POLLUTION: ${virusPollutionDegree}/100 DAMAGE: ${damageText} SCORE: ${hitScoreText} CREW: ${crewSaved}/4`
+      //
+      //   ctx.font = `bold 36px ${Contracts.FONT_GAME_INFO}`
+      //   ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
+      //
+      //   const x = Math.floor(this.width) * 0.5 - ctx.measureText(gameInfoText).width / 2
+      //   const y = Math.floor(this.height) * 0.1
+      //
+      //   ctx.fillText(gameInfoText, x, y)
+      // },
+      // dropMonsters (virusBorderY) {
+      //   // console.log('monsters', this.monsters.length)
+      //   this.monsters.forEach(monster => {
+      //     monster.show()
+      //
+      //     if (monster.isHit(this.hero.getBullets())) {
+      //       this.hitScore += this.hitScoreInterval
+      //       monster.transformToHero(this.hero)
+      //       this.decreasePollutedArea()
+      //     } else if (monster.hitHero(this.hero)) {
+      //       monster.reset()
+      //       if (this.hero.decreaseHealth()) {
+      //         this.increasePollutedArea(0.1)
+      //       } else {
+      //         // gameOver
+      //         // TODO quack sound
+      //         this.lostGame()
+      //       }
+      //     } else if (monster.drop(virusBorderY)) {
+      //       this.increasePollutedArea()
+      //     }
+      //   })
+      // },
+      // startDemo () {
+      //   this.demoMode = true
+      //   this.increaseRate = 0.1
+      //   this.gameMode = Contracts.ON_THE_GAME
+      //   this.resetMonsters()
+      //   this.initGame()
+      // },
+      // startGame () {
+      //   this.demoMode = false
+      //   this.increaseRate = 0.01
+      //   this.gameMode = Contracts.ON_THE_GAME
+      //   this.resetMonsters()
+      //   this.initGame()
+      // },
       continueGame () {
-        this.gameMode = Contracts.ON_THE_GAME
+        // this.gameMode = Contracts.ON_THE_GAME
+        this.pause = false
+        this.requestFrame()
       },
       setGameOvertimer () {
         this.timer.gameover = 5 + Math.floor(Date.now() / 1000)
@@ -294,27 +329,29 @@
         this.setGameOvertimer()
         this.gameMode = Contracts.LOST_THE_GAME
       },
-      decreasePollutedArea () {
-        this.virusBorderY += Math.floor(this.height * this.increaseRate)
-        if (this.virusBorderY > this.height) {
-          this.virusBorderY = this.height
-          this.wonGame()
-        }
-      },
-      drawCleanZone (ctx, y) {
-        ctx.fillStyle = Contracts.COLOR_CLEAN_ZONE
-        ctx.fillRect(0, 0, this.width, y)
-      },
-      drawPollutionZone (ctx, y) {
-        ctx.fillStyle = Contracts.COLOR_POLLUTION_ZONE
-        ctx.fillRect(0, y, this.width, this.height)
-      },
+      // @deprecatd
+      // decreasePollutedArea () {
+      //   this.virusBorderY += Math.floor(this.height * this.increaseRate)
+      //   if (this.virusBorderY > this.height) {
+      //     this.virusBorderY = this.height
+      //     this.wonGame()
+      //   }
+      // },
+      // drawCleanZone (ctx, y) {
+      //   ctx.fillStyle = Contracts.COLOR_CLEAN_ZONE
+      //   ctx.fillRect(0, 0, this.width, y)
+      // },
+      // drawPollutionZone (ctx, y) {
+      //   ctx.fillStyle = Contracts.COLOR_POLLUTION_ZONE
+      //   ctx.fillRect(0, y, this.width, this.height)
+      // },
       /**
        * https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
        *
        * @param timestamp
        */
       run (timestamp) {
+        console.log('AppMain.run()', { gameMode: this.gameMode, width: this.width, height: this.height })
         // console.log((new Date()).getSeconds())
         // console.log('timestamp', timestamp)
         if (!this.start) {
@@ -327,41 +364,54 @@
 
         if (this.ctx) {
 
-          const virusBorderY = this.virusBorderY
+          // const virusBorderY = this.virusBorderY
+          // console.log({ gameMode: this.gameMode, virusBorderY: this.virusBorderY })
 
-          // Clean area
-          this.ctx.clearRect(0, 0, this.width, this.height)
-          this.ctx.beginPath()
+          this.game
+            .run({
+                ctx: this.ctx,
+                width: this.width,
+                height: this.height,
+                // virusBorderY: this.virusBorderY,
+                gameMode: this.gameMode,
+                increaseRate: this.increaseRate
+              }
+            )
 
-          this.drawCleanZone(this.ctx, virusBorderY)
-          this.drawPollutionZone(this.ctx, virusBorderY)
-
-          // console.log('gameMode:', this.gameMode)
-          switch (true) {
-            // Intro
-            case (this.gameMode === Contracts.INTRO_THE_GAME):
-              this.showGameIntro({ ctx: this.ctx, virusBorderY })
-              break
-            // case (this.gameMode === Contracts.PLAY_DEMO):
-            //   this.startDemo()
-            //   break
-            // Game Over
-            case (this.gameMode !== Contracts.ON_THE_GAME) :
-              this.showGameInfo(this.ctx, virusBorderY)
-              this.showGameEnding(this.ctx)
-              break
-            // Game On
-            case (this.gameMode === Contracts.ON_THE_GAME) :
-              // console.log('play', this.demoMode)
-              this.showGameInfo(this.ctx, virusBorderY)
-              this.hero.setDemoMode(this.demoMode).show(virusBorderY)
-              this.dropMonsters(virusBorderY)
-              break
-          }
+          // // Clean area
+          // this.ctx.clearRect(0, 0, this.width, this.height)
+          // this.ctx.beginPath()
+          //
+          // this.drawCleanZone(this.ctx, virusBorderY)
+          // this.drawPollutionZone(this.ctx, virusBorderY)
+          //
+          // // console.log('gameMode:', this.gameMode)
+          // switch (true) {
+          //   // Intro
+          //   case (this.gameMode === Contracts.INTRO_THE_GAME):
+          //     this.showGameIntro({ ctx: this.ctx, virusBorderY })
+          //     break
+          //   // case (this.gameMode === Contracts.PLAY_DEMO):
+          //   //   this.startDemo()
+          //   //   break
+          //   // Game Over
+          //   case (this.gameMode !== Contracts.ON_THE_GAME):
+          //     this.showGameInfo(this.ctx, virusBorderY)
+          //     this.showGameEnding(this.ctx)
+          //     break
+          //   // Game On
+          //   case (this.gameMode === Contracts.ON_THE_GAME):
+          //     // console.log('play', this.demoMode)
+          //     this.showGameInfo(this.ctx, virusBorderY)
+          //     this.hero.run(virusBorderY, this.demoMode)
+          //     this.monsters.run(virusBorderY)
+          //     break
+          // }
 
         } // ctx
 
         this.requestFrame()
+        this.pause = true
       } // run
 
     } // methods

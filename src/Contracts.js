@@ -44,9 +44,10 @@ const COLOR_HERO_SHADE_11 = '#292000'
 const COLOR_HERO_SHADE_12 = '#161100'
 const COLOR_HERO_SHADE_13 = '#020200'
 
+const INIT_THE_GAME = -9
 const WON_THE_GAME = 1
 const LOST_THE_GAME = -1
-const ON_THE_GAME = 0
+const ON_THE_GAME = 5
 const INTRO_THE_GAME = 2
 const PLAY_DEMO = 3
 
@@ -66,6 +67,7 @@ export default {
 
   IMG_EXPLOSION,
 
+  INIT_THE_GAME,
   FONT_WON_GAME,
   FONT_LOSE_GAME,
   FONT_HERO,

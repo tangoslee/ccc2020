@@ -82,8 +82,9 @@ class Monster {
     this.y = Math.floor(this.y) + this.velocityY
 
     // console.log('monster speed', this.velocityY)
-    // console.log('drop:', this.y, ' >= ', limit, this.y >= limit)
-    if (this.y >= limit) {
+    const y = Math.floor(this.y - this.h / 5)
+    console.log('drop:', y, ' >= ', limit, this.y >= limit)
+    if (y >= limit) {
       const release = this.release
       this.reset()
       return !release

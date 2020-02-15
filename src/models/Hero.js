@@ -3,14 +3,14 @@ import Contracts from '@/Contracts'
 
 class Hero {
 
-  constructor (ctx, boxWidth, boxHeight, { bulletIcon }) {
+  constructor () {
     // console.log('hero created')
 
-    this.ctx = ctx
-    this.boxWidth = Math.floor(boxWidth)
-    this.boxHeight = Math.floor(boxHeight)
+    this.ctx = null
+    this.boxWidth = null
+    this.boxHeight = null
 
-    this.bulletIcon = bulletIcon
+    this.bulletIcon = '+'
 
     this.limitMargin = 5
     this.xLimit = this.boxWidth - this.limitMargin
@@ -35,6 +35,16 @@ class Hero {
     this.maxDamage = 13
 
     this.reset()
+  }
+
+  setGame (ctx, boxWidth, boxHeight) {
+    this.ctx = ctx
+    this.boxWidth = Math.floor(boxWidth)
+    this.boxHeight = Math.floor(boxHeight)
+  }
+
+  setBulletIcon (bulletIcon) {
+    this.bulletIcon = bulletIcon
   }
 
   reset () {
@@ -64,6 +74,7 @@ class Hero {
 
   updateKeyEvent (key, value) {
     this.props.keys[key] = value
+    // console.log('hero.updateKeyEvent', { key, value })
   }
 
   getBullets () {
@@ -103,12 +114,12 @@ class Hero {
     ctx.fillText(this.text, x, this.y)
 
     //S:debug
-    // const font = ctx.font
-    // ctx.save()
-    // ctx.font = `10px serif`
-    // ctx.fillStyle = Contracts.COLOR_HERO
-    // ctx.fillText(`x:${this.x},y:${y},w:${this.w},h:${this.h}, font: ${font}`, this.x + 20, y + 20)
-    // ctx.restore()
+    const font = ctx.font
+    ctx.save()
+    ctx.font = `10px serif`
+    ctx.fillStyle = Contracts.COLOR_HERO
+    ctx.fillText(`x:${this.x},y:${y},w:${this.w},h:${this.h}, font: ${font}`, this.x + 20, y + 20)
+    ctx.restore()
     //E:debug
 
     this.y = y
@@ -202,6 +213,11 @@ class Hero {
 
     this.ctx = ctx
     this.x = Math.floor(x)
+  }
+
+  run (virusBorderY, demoMode) {
+    this.setDemoMode(demoMode)
+      .show(virusBorderY)
   }
 
 }
