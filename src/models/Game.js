@@ -57,7 +57,7 @@ class Game {
 
   drawCleanZone (ctx, y) {
     const { width } = this.cfg
-    console.log('drawCleanZone:', { width, y })
+    // console.log('drawCleanZone:', { width, y })
     ctx.fillStyle = Contracts.COLOR_CLEAN_ZONE
     ctx.fillRect(0, 0, width, y)
   }
@@ -65,7 +65,7 @@ class Game {
   drawPollutionZone (ctx, y) {
     const { width, height } = this.cfg
     ctx.fillStyle = Contracts.COLOR_POLLUTION_ZONE
-    console.log('drawPollutionZone:', { y, width, height })
+    // console.log('drawPollutionZone:', { y, width, height })
     ctx.fillRect(0, y, width, height)
   }
 
@@ -181,7 +181,7 @@ class Game {
       ...this.cfg,
       virusBorderY: Math.floor(virusBorderY) - Math.floor(height * (increaseRate || this.cfg.increaseRate))
     }
-    console.log('increasePollutedArea', { virusBorderY: this.cfg.virusBorderY })
+    // console.log('increasePollutedArea', { virusBorderY: this.cfg.virusBorderY })
     if (this.cfg.virusBorderY <= 0) {
       this.cfg.virusBorderY = 0
       this.lostGame()
@@ -195,7 +195,7 @@ class Game {
       ...this.cfg,
       virusBorderY: Math.floor(virusBorderY) + Math.floor(height * this.cfg.increaseRate)
     }
-    console.log('decreasePollutedArea', { virusBorderY: this.cfg.virusBorderY, height })
+    // console.log('decreasePollutedArea', { virusBorderY: this.cfg.virusBorderY, height })
     if (this.cfg.virusBorderY > height) {
       this.cfg.virusBorderY = height
       this.wonGame()
@@ -218,7 +218,7 @@ class Game {
     this.gameMode = Contracts.ON_THE_GAME
     // this.resetMonsters()
     this.monsters.reset()
-    console.log('startDemo', { gameMode: this.gameMode, demoMode: this.demoMode })
+    // console.log('startDemo', { gameMode: this.gameMode, demoMode: this.demoMode })
     this.initGame()
   }
 
@@ -228,7 +228,7 @@ class Game {
     this.increaseRate = 0.01
     this.gameMode = Contracts.ON_THE_GAME
     this.monsters.reset()
-    console.log('startGame', { gameMode: this.gameMode, demoMode: this.demoMode })
+    // console.log('startGame', { gameMode: this.gameMode, demoMode: this.demoMode })
     this.initGame()
   }
 

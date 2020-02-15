@@ -13,7 +13,7 @@ class Hero {
     this.bulletIcon = '+'
 
     this.limitMargin = 5
-    this.xLimit = this.boxWidth - this.limitMargin
+    this.xLimit = 0
     // this.yLimit = this.boxHeight - this.limitMargin
 
     this.damageRange = [
@@ -41,6 +41,7 @@ class Hero {
     this.ctx = ctx
     this.boxWidth = Math.floor(boxWidth)
     this.boxHeight = Math.floor(boxHeight)
+    this.xLimit = this.boxWidth - this.limitMargin
   }
 
   setBulletIcon (bulletIcon) {
@@ -74,7 +75,7 @@ class Hero {
 
   updateKeyEvent (key, value) {
     this.props.keys[key] = value
-    // console.log('hero.updateKeyEvent', { key, value })
+    console.log('hero.updateKeyEvent', { key, value })
   }
 
   getBullets () {
@@ -111,6 +112,7 @@ class Hero {
     if (y > this.boxHeight - 10) {
       y = this.boxHeight - 10
     }
+    console.log('drawHero', { x, y: this.y })
     ctx.fillText(this.text, x, this.y)
 
     //S:debug
@@ -118,7 +120,7 @@ class Hero {
     ctx.save()
     ctx.font = `10px serif`
     ctx.fillStyle = Contracts.COLOR_HERO
-    ctx.fillText(`x:${this.x},y:${y},w:${this.w},h:${this.h}, font: ${font}`, this.x + 20, y + 20)
+    ctx.fillText(`x:${x},y:${this.y},w:${this.w},h:${this.h}, font: ${font}`, this.x, y + 20)
     ctx.restore()
     //E:debug
 
@@ -160,6 +162,7 @@ class Hero {
 
     // leftArrow
     if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
+      console.log('show leftArrow', { velocityX, speed: -speed })
       if (velocityX > -speed) {
         velocityX -= velocityInterval
       }
@@ -167,6 +170,7 @@ class Hero {
 
     // rightArrow
     if (keys[Contracts.KEY_CODE_RIGHT_ARROW]) {
+      console.log('show rightArrow', { velocityX, speed: -speed })
       if (velocityX < speed) {
         velocityX += velocityInterval
       }
@@ -183,7 +187,8 @@ class Hero {
     velocityX = Math.floor(velocityX) * friction
     x += velocityX
 
-    // console.log('hero speed ', velocityX)
+    // console.log('hero speed ', { velocityX, x, virusBorderY })
+    // console.log({ xLimit: this.xLimit, limitMargin: this.limitMargin, w: this.w })
 
     if (x >= this.xLimit) {
       x = this.limitMargin
