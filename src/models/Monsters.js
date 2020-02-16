@@ -44,9 +44,6 @@ class Monsters {
         // console.log('monster dropped!')
         SimpleStore.publish(Contracts.EVENT_MONSTER_REACH_GROUND)
       }
-
-      // TODO add damage control
-
     } // E: for loop
   } // E: run()
 

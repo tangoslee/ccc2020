@@ -47,7 +47,9 @@ class Game {
 
     SimpleStore.subscribe(Contracts.EVENT_BULLET_HIT_MONSTER, ({ monster }) => {
       this.hitScore += this.hitScoreInterval
-      monster.transformToHero(this.hero)
+      if (monster.cure()) {
+        monster.transformToHero(this.hero)
+      }
       this.decreasePollutedArea()
     })
 
@@ -271,11 +273,11 @@ class Game {
     }
   }
 
-  decreasePollutedArea () {
+  decreasePollutedArea (increaseRate = 0) {
     const { height } = this.cfg
     const { virusBorderY: oldVirusBorderY, increaseRate: defaultIncreaseRate } = SimpleStore.state
     // this.cfg.virusBorderY += Math.floor(height * this.increaseRate)
-    let val = Math.floor(oldVirusBorderY) + Math.floor(height * defaultIncreaseRate)
+    let val = Math.floor(oldVirusBorderY) + Math.floor(height * (increaseRate || defaultIncreaseRate))
 
     const virusBorderY = val > height ? height : val
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { virusBorderY }, { virusBorderY })

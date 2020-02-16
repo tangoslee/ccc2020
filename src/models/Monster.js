@@ -1,5 +1,6 @@
 import Contracts from '@/Contracts'
 import { SimpleStore } from '@/stores/simple-store'
+import Damage from '@/models/Damage'
 
 class Monster {
   constructor () {
@@ -31,8 +32,10 @@ class Monster {
     this.x = this.random(100, (this.width - 200))
     this.size = Math.round(this.random(50, 96))
     this.font = fonts[this.random(0, fonts.length - 1)]
+    this.color = Contracts.COLOR_MONSTER
     this.y = Math.floor(this.initY)
     this.release = false
+    this.damage = new Damage(Contracts.MONSTER, this.random(3, 14))
   }
 
   random (min, max) {
@@ -42,6 +45,18 @@ class Monster {
   setText (text) {
     this.text = text
     return this
+  }
+
+  isCured () {
+    return this.damage.value === 0
+  }
+
+  cure () {
+    this.damage.decrease()
+    const { color, font } = this.damage.style
+    this.color = color
+    this.font = font
+    return this.isCured()
   }
 
   show () {
@@ -71,7 +86,7 @@ class Monster {
       }
 
       this.ctx.font = `bold ${this.size}px ${this.font}`
-      this.ctx.fillStyle = Contracts.COLOR_MONSTER
+      this.ctx.fillStyle = this.color
       this.ctx.textBaseline = 'alphabetic'
       this.ctx.fillText(this.text, this.x, this.y)
 
