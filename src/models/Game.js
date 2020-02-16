@@ -94,6 +94,18 @@ class Game {
     return this
   }
 
+  displayText (text, ctx, lineHeightInterval, offsetX = null, offsetY = null) {
+    const { width, height } = SimpleStore.state
+    let lineHeight = lineHeightInterval
+    for (let line of text) {
+      const x = offsetX !== null ? offsetX : Math.floor(width) * 0.5 - ctx.measureText(line).width / 2
+      const y = offsetY !== null ? offsetY : Math.floor(height) * 0.1
+
+      ctx.fillText(line, x, y + lineHeight)
+      lineHeight += lineHeightInterval
+    }
+  }
+
   clearScreen () {
     const { ctx, width, height } = SimpleStore.state
     ctx.clearRect(0, 0, width, height)
@@ -200,14 +212,15 @@ class Game {
     ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
     ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
 
-    let lineHeight = lineHeightInterval
-    for (let introText of introTexts) {
-      const x = Math.floor(width) * 0.5 - ctx.measureText(introText).width / 2
-      const y = Math.floor(height) * 0.1
-
-      ctx.fillText(introText, x, y + lineHeight)
-      lineHeight += lineHeightInterval
-    }
+    this.displayText(introTexts, ctx, lineHeightInterval)
+    // let lineHeight = lineHeightInterval
+    // for (let introText of introTexts) {
+    //   const x = Math.floor(width) * 0.5 - ctx.measureText(introText).width / 2
+    //   const y = Math.floor(height) * 0.1
+    //
+    //   ctx.fillText(introText, x, y + lineHeight)
+    //   lineHeight += lineHeightInterval
+    // }
 
   }
 
@@ -320,9 +333,7 @@ class Game {
   }
 
   run (timestamp) {
-    const { ctx, width, height, gameMode, demoMode, virusBorderY } = SimpleStore.state
-
-    // console.log('game run', { 'gameMode': gameMode, 'demoMode': demoMode, virusBorderY })
+    const { gameMode } = SimpleStore.state
 
     this.clearScreen()
 

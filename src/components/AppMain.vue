@@ -22,6 +22,7 @@
     name: 'AppMain',
     data () {
       return {
+        timer: null,
         pause: false,
         game: null,
         canvas: null,
@@ -99,6 +100,7 @@
       },
       init () {
         // console.log('init')
+        this.timer = null
         this.pause = false
         this.game.initGame()
         this.requestFrame()
@@ -122,6 +124,16 @@
       run (timestamp) {
         // https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
         // console.log('AppMain.run()', { timestamp })
+
+        if (this.timer === null) {
+          this.timer = {
+            diff: timestamp - (new Date(timestamp)).getSeconds()
+          }
+        }
+        const { diff } = this.timer
+        const seconds = (new Date(timestamp - diff)).getSeconds()
+        console.log(seconds)
+
         this.game.run(timestamp)
         this.requestFrame()
         // this.pause = true
