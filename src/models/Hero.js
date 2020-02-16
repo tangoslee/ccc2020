@@ -63,7 +63,7 @@ class Hero {
     this.y = this.boxHeight - 50
     this.bullets = []
 
-    this.text = 'C'
+    this.text = 'A'
     this.color = Contracts.COLOR_HERO
     this.damage = 0
     this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})

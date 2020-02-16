@@ -323,25 +323,26 @@ class Game {
     // console.log({ x, y, w, h, font })
     // // E:Test
 
-    switch (true) {
+    switch (gameMode) {
       // init
-      case (gameMode === Contracts.INIT_THE_GAME):
+      case Contracts.INIT_THE_GAME:
         // console.log('init game')
         return {
           callback: Contracts.INIT_THE_GAME
         }
       // Intro
-      case (gameMode === Contracts.INTRO_THE_GAME):
+      case Contracts.INTRO_THE_GAME:
         // console.log('intro game')
         this.showGameIntro({ ctx, virusBorderY, timestamp, progress, frameSeq })
         return {}
-      case (gameMode !== Contracts.ON_THE_GAME):
+      case Contracts.WON_THE_GAME:
+      case Contracts.LOST_THE_GAME:
         // console.log('end game')
         this.showGameInfo(ctx, virusBorderY)
         this.showGameEnding({ ctx, timestamp })
         return {}
       // Game On
-      case (gameMode === Contracts.ON_THE_GAME):
+      case Contracts.ON_THE_GAME:
         // console.log('play', this.demoMode)
         // console.log('play game')
         this.showGameInfo(ctx, virusBorderY)
@@ -354,21 +355,25 @@ class Game {
             switch (event) {
               case Contracts.EVENT_BULLET_HIT_MONSTER:
                 // console.log('EVENT_BULLET_HIT_MONSTER')
-                this.hitScore += this.hitScoreInterval
-                const { monster: monster1 } = payload
-                monster1.transformToHero(this.hero)
-                this.decreasePollutedArea()
+                (() => {
+                  this.hitScore += this.hitScoreInterval
+                  const { monster } = payload
+                  monster.transformToHero(this.hero)
+                  this.decreasePollutedArea()
+                })()
                 break
               case Contracts.EVENT_MONSTER_HIT_HERO:
                 // console.log('EVENT_MONSTER_HIT_HERO')
-                const { monster: monster2 } = payload
-                monster2.reset()
-                if (this.hero.decreaseHealth()) {
-                  this.increasePollutedArea(0.1)
-                } else {
-                  // gameOver
-                  this.lostGame()
-                }
+                (() => {
+                  const { monster } = payload
+                  monster.reset()
+                  if (this.hero.decreaseHealth()) {
+                    this.increasePollutedArea(0.1)
+                  } else {
+                    // gameOver
+                    this.lostGame()
+                  }
+                })()
                 break
               case Contracts.EVENT_MONSTER_REACH_GROUND:
                 // console.log('EVENT_MONSTER_REACH_GROUND')

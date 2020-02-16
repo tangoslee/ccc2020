@@ -15,7 +15,7 @@ class Monsters {
   init (ctx, width, height) {
     // Create monsters
     this.monsters = []
-    'ANDY'.split('').forEach(ch => {
+    'CNDY'.split('').forEach(ch => {
       const monster = new Monster(ctx, width, height).setText(ch)
       this.monsters.push(monster)
     })
