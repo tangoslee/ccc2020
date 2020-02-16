@@ -34,20 +34,18 @@ class Monsters {
     for (let monster of this.monsters) {
       monster.show()
 
-      switch (true) {
-        case monster.isHit(this.hero.getBullets()):
-          // console.log('monster hit by bullet')
-          SimpleStore.publish(Contracts.EVENT_BULLET_HIT_MONSTER, { monster })
-          break
-        case monster.hitHero(this.hero):
-          // console.log('monster hit the hero')
-          SimpleStore.publish(Contracts.EVENT_MONSTER_HIT_HERO, { monster })
-          break
-        case monster.drop(virusBorderY):
-          // console.log('monster dropped!')
-          SimpleStore.publish(Contracts.EVENT_MONSTER_REACH_GROUND)
-          break
+      if (monster.isHit(this.hero.getBullets())) {
+        // console.log('monster hit by bullet')
+        SimpleStore.publish(Contracts.EVENT_BULLET_HIT_MONSTER, { monster })
+      } else if (monster.hitHero(this.hero)) {
+        // console.log('monster hit the hero')
+        SimpleStore.publish(Contracts.EVENT_MONSTER_HIT_HERO, { monster })
+      } else if (monster.drop(virusBorderY)) {
+        // console.log('monster dropped!')
+        SimpleStore.publish(Contracts.EVENT_MONSTER_REACH_GROUND)
       }
+
+      // TODO add damage control
 
     } // E: for loop
   } // E: run()

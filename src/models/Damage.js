@@ -50,7 +50,7 @@ class Damage {
     }
   }
 
-  decrese (val = 1) {
+  decrease (val = 1) {
     this.value -= Math.floor(val)
     if (this.value < 0) {
       this.value = 0

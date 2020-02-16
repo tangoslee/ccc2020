@@ -42,6 +42,7 @@ class Hero {
     this.y = height - 50
     this.bullets = []
 
+    this.demoTimer = null
     this.text = 'A'
     this.color = Contracts.COLOR_HERO
     this.font = Contracts.FONT_HERO
@@ -112,7 +113,16 @@ class Hero {
     return this.damage.value < this.damage.maxDamage
   }
 
-  getDemoControl () {
+  getDemoControl (timestamp, width) {
+    if (this.demoTimer === null) {
+      this.demoTimer = {
+        diff: timestamp - (new Date(timestamp)).getMilliseconds()
+      }
+    }
+    const { diff } = this.demoTimer
+    const seconds = (new Date(timestamp - diff)).getSeconds()
+    // const seconds = (new Date(timestamp - diff)).getMilliseconds()
+    // console.log('demo', seconds)
     const ms = Date.now()
     const k = Math.floor(ms / 240) % 240 % 10
     const f = Math.floor(ms) % 10
@@ -128,7 +138,7 @@ class Hero {
   show (timestamp) {
     const { demoMode, ctx, width, virusBorderY } = SimpleStore.state
     let { keys, velocityX, velocityInterval, speed, friction } = this.props
-    
+
     let x = this.x
     const xLimit = Math.floor(width) - this.limitMargin
 
@@ -150,7 +160,7 @@ class Hero {
 
     //S: Control Demo
     if (demoMode) {
-      const { xVelocity, fired } = this.getDemoControl()
+      const { xVelocity, fired } = this.getDemoControl(timestamp, width)
       velocityX = xVelocity
       keys[Contracts.KEY_CODE_SPACEBAR] = fired
     }
