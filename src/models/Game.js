@@ -16,11 +16,13 @@ class Game {
     this.monsters = null
 
     this.hitScore = 0
+    this.hitScoreInterval = 1
     this.gameMode = null
 
     // timer
     this.introTimer = null
     this.endingTimer = null
+    this.demoTimer = null
 
   }
 
@@ -33,7 +35,7 @@ class Game {
     // this.cfg.virusBorderY = Math.floor(this.height * 0.8)
     const { height } = this.cfg
     const virusBorderY = Math.floor(height * 0.8)
-    console.log({ 'initGame': height, virusBorderY })
+    // console.log({ 'initGame': height, virusBorderY })
     this.cfg = {
       ...this.cfg,
       virusBorderY
@@ -45,6 +47,7 @@ class Game {
 
     this.introTimer = null
     this.endingTimer = null
+    this.demoTimer = null
   }
 
   setHero (hero) {
@@ -74,6 +77,32 @@ class Game {
     ctx.fillStyle = Contracts.COLOR_POLLUTION_ZONE
     // console.log('drawPollutionZone:', { y, width, height })
     ctx.fillRect(0, y, width, height)
+  }
+
+  showDemoInfo (ctx, width, height, timestamp) {
+    if (!this.demoMode) return
+
+    if (this.demoTimer === null) {
+      this.demoTimer = {
+        diff: timestamp - (new Date(timestamp)).getSeconds()
+      }
+    }
+    const { diff } = this.demoTimer
+    const seconds = (new Date(timestamp - diff)).getSeconds()
+
+    if (seconds % 2 === 0) {
+      let fontSize = 36
+
+      if (width < 1024) {
+        fontSize = 32
+      }
+      const gameInfoText = `Press "S" to play...`
+      const x = Math.floor(width) * 0.5 - ctx.measureText(gameInfoText).width / 2
+      const y = height
+      ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
+      ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
+      ctx.fillText(gameInfoText, x, y / 2)
+    }
   }
 
   showGameInfo (ctx, virusBorderY) {
@@ -151,6 +180,7 @@ class Game {
   }
 
   showGameEnding ({ ctx, timestamp }) {
+    this.demoMode = false
     const { width, height } = this.cfg
 
     if (this.introTimer === null) {
@@ -227,7 +257,6 @@ class Game {
   }
 
   lostGame () {
-    // this.setGameOvertimer()
     this.gameMode = Contracts.LOST_THE_GAME
   }
 
@@ -273,6 +302,27 @@ class Game {
     this.drawCleanZone(ctx, virusBorderY)
     this.drawPollutionZone(ctx, virusBorderY)
 
+    if (this.demoMode) {
+      this.showDemoInfo(ctx, width, height, timestamp)
+    }
+
+    // // S:Test
+    // const text = 'D'
+    // const font = 'Nosifer'
+    // const x = 0
+    // const y = 0
+    // ctx.font = `bold 65px ${font}`
+    // ctx.fillStyle = Contracts.COLOR_MONSTER
+    // //ctx.textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
+    // ctx.textBaseline = 'top'
+    // ctx.fillText(text, x, y)
+    //
+    // const { width: fw, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(text)
+    // const w = Math.floor(fw)
+    // const h = Math.floor(actualBoundingBoxAscent) + actualBoundingBoxDescent
+    // console.log({ x, y, w, h, font })
+    // // E:Test
+
     switch (true) {
       // init
       case (gameMode === Contracts.INIT_THE_GAME):
@@ -299,21 +349,30 @@ class Game {
         this.monsters
           .run(virusBorderY)
           .then(response => {
-            const { callback, value } = response || { callback: null, value: null }
-            // console.log('monsters callback:', { callback, value })
-            switch (true) {
-              // case callback === Contracts.INIT_THE_GAME:
-              //   this.init()
-              //   break
-              case callback === 'decreasePollutedArea':
-                // console.log('call decreasePollutedArea', { callback })
+            const { event, payload } = response || { event: null, payload: null }
+            // console.log('monsters event:', { event, payload })
+            switch (event) {
+              case Contracts.EVENT_BULLET_HIT_MONSTER:
+                // console.log('EVENT_BULLET_HIT_MONSTER')
+                this.hitScore += this.hitScoreInterval
+                const { monster: monster1 } = payload
+                monster1.transformToHero(this.hero)
                 this.decreasePollutedArea()
                 break
-              case callback === 'increasePollutedArea':
-                this.increasePollutedArea(value)
+              case Contracts.EVENT_MONSTER_HIT_HERO:
+                // console.log('EVENT_MONSTER_HIT_HERO')
+                const { monster: monster2 } = payload
+                monster2.reset()
+                if (this.hero.decreaseHealth()) {
+                  this.increasePollutedArea(0.1)
+                } else {
+                  // gameOver
+                  this.lostGame()
+                }
                 break
-              case callback === 'lostGame':
-                this.lostGame()
+              case Contracts.EVENT_MONSTER_REACH_GROUND:
+                // console.log('EVENT_MONSTER_REACH_GROUND')
+                this.increasePollutedArea()
                 break
             }
           })

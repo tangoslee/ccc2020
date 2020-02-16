@@ -50,22 +50,26 @@ class Monster {
     // font-family: 'Frijole', cursive;
     // font-family: 'Nosifer', cursive;
 
+    // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline
+    // ctx.textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
     if (this.release) {
       // this.ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
       // this.ctx.save()
       this.ctx.fillStyle = Contracts.COLOR_HERO
       // this.ctx.rotate(90 * Math.PI / 180)
+      this.ctx.textBaseline = 'alphabetic'
       this.ctx.fillText(this.text, this.x, this.y)
       // this.ctx.restore()
     } else {
-      //s:debug
+      // //s:debug
       // this.ctx.font = `10px serif`
       // this.ctx.fillStyle = Contracts.COLOR_MONSTER
       // this.ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x + 20, this.y + 20)
-      //e: debug
+      // //e: debug
 
       this.ctx.font = `bold ${this.size}px ${this.font}`
       this.ctx.fillStyle = Contracts.COLOR_MONSTER
+      this.ctx.textBaseline = 'alphabetic'
       this.ctx.fillText(this.text, this.x, this.y)
 
     }
@@ -101,11 +105,29 @@ class Monster {
     //   (target.x + target.w) < x ||
     //   target.y > (y + h) ||
     //   (target.y + target.h) < y)
-    return !this.release && !(x > target.x + target.w ||
-      x + w < target.x ||
-      y + h < target.y ||
-      y > target.y + target.h
-    )
+
+    // const { x: tx, y: ty, w: tw, h: th } = target
+    // console.log({
+    //   monster: { x, y, w, h },
+    //   target: { tx, ty, tw, th }
+    // })
+    //
+    // console.log({
+    //   release: this.release,
+    //   'x > target.x + target.w': x > target.x + target.w,
+    //   'x + w < target.x': x + w < target.x,
+    //   'y < target.y': y < target.y,
+    //   'y - h > target.y + target.h': y - h > target.y + target.h
+    // })
+
+    return !this.release &&
+      !(
+        x > target.x + target.w ||
+        x + w < target.x ||
+        y < target.y ||
+        y - h > target.y + target.h
+      )
+
   }
 
   isHit (bullets) {

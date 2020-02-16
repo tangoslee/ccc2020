@@ -75,7 +75,7 @@ class Hero {
 
   updateKeyEvent (key, value) {
     this.props.keys[key] = value
-    console.log('hero.updateKeyEvent', { key, value })
+    // console.log('hero.updateKeyEvent', { key, value })
   }
 
   getBullets () {
@@ -96,9 +96,16 @@ class Hero {
 
   fire (ctx, x, y) {
     // console.log('fire:', x, y)
-    this.bullets.push(new Bullet(ctx, x, y))
+    this.bullets.push(new Bullet(ctx, x, y, this.boxHeight))
   }
 
+  /**
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline
+   * //ctx.textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
+   * @param ctx
+   * @param x
+   * @param virusBorderY
+   */
   drawHero (ctx, x, virusBorderY) {
 
     ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
@@ -108,21 +115,23 @@ class Hero {
 
     this.w = Math.floor(width)
     this.h = Math.floor(actualBoundingBoxAscent) + Math.floor(actualBoundingBoxDescent)
-    let y = Math.floor(virusBorderY) + this.h - 10
-    if (y > this.boxHeight - 10) {
-      y = this.boxHeight - 10
+    let y = Math.floor(virusBorderY) - Math.floor(this.h / 5) // 10% above on the borderY
+    if (y + this.h > this.boxHeight) {
+      y = this.boxHeight - this.h
     }
-    console.log('drawHero', { x, y: this.y })
-    ctx.fillText(this.text, x, this.y)
+    // console.log('drawHero', { x, y: this.y })
+    ctx.textBaseline = 'top'
+    ctx.fillText(this.text, x, y)
 
-    //S:debug
-    const font = ctx.font
-    ctx.save()
-    ctx.font = `10px serif`
-    ctx.fillStyle = Contracts.COLOR_HERO
-    ctx.fillText(`x:${x},y:${this.y},w:${this.w},h:${this.h}, font: ${font}`, this.x, y + 20)
-    ctx.restore()
-    //E:debug
+    // //S:debug
+    // const font = ctx.font
+    // ctx.save()
+    // ctx.font = `10px serif`
+    // ctx.fillStyle = Contracts.COLOR_HERO
+    // ctx.textBaseline = 'top'
+    // ctx.fillText(`x:${x},y:${this.y},w:${this.w},h:${this.h}, font: ${font}`, this.x, y + this.h + 10)
+    // ctx.restore()
+    // //E:debug
 
     this.y = y
   }
@@ -162,7 +171,7 @@ class Hero {
 
     // leftArrow
     if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
-      console.log('show leftArrow', { velocityX, speed: -speed })
+      // console.log('show leftArrow', { velocityX, speed: -speed })
       if (velocityX > -speed) {
         velocityX -= velocityInterval
       }
@@ -170,7 +179,7 @@ class Hero {
 
     // rightArrow
     if (keys[Contracts.KEY_CODE_RIGHT_ARROW]) {
-      console.log('show rightArrow', { velocityX, speed: -speed })
+      // console.log('show rightArrow', { velocityX, speed: -speed })
       if (velocityX < speed) {
         velocityX += velocityInterval
       }
@@ -205,7 +214,7 @@ class Hero {
       const cText = ctx.measureText(this.text)
       // console.log(cText)
       keys[Contracts.KEY_CODE_SPACEBAR] = false
-      this.fire(ctx, x + this.w / 2 + cText.actualBoundingBoxLeft, this.y - this.h - 32)
+      this.fire(ctx, x + this.w / 2 + cText.actualBoundingBoxLeft, this.y - 10)
     }
 
     this.props = {

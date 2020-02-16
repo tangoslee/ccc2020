@@ -1,4 +1,5 @@
 import Monster from '@/models/Monster'
+import Contracts from '@/Contracts'
 
 class Monsters {
   constructor () {
@@ -32,40 +33,24 @@ class Monsters {
 
       switch (true) {
         case monster.isHit(this.hero.getBullets()):
-          console.log('monster hit by bullet')
-          // this.hitScore += this.hitScoreInterval
-          monster.transformToHero(this.hero)
-          // this.decreasePollutedArea()
+          // console.log('monster hit by bullet')
           return {
-            callback: 'decreasePollutedArea',
-            value: null
+            event: Contracts.EVENT_BULLET_HIT_MONSTER,
+            payload: { monster }
           }
-        // return info
-        // break
         case monster.hitHero(this.hero):
-          monster.reset()
-          if (this.hero.decreaseHealth()) {
-            // this.increasePollutedArea(0.1)
-            return {
-              callback: 'increasePollutedArea',
-              value: 0.1
-            }
-          } else {
-            // gameOver
-            // TODO throw exception
-            // this.lostGame()
-            return {
-              callback: 'lostGame',
-              value: null
-            }
+          // console.log('monster hit the hero')
+          return {
+            event: Contracts.EVENT_MONSTER_HIT_HERO,
+            payload: { monster }
           }
           break
         case monster.drop(virusBorderY):
-          console.log('monster dropped!')
+          // console.log('monster dropped!')
           // this.increasePollutedArea()
           return {
-            callback: 'increasePollutedArea',
-            value: null
+            event: Contracts.EVENT_MONSTER_REACH_GROUND,
+            payload: {}
           }
         // break
       }

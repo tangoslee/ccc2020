@@ -188,7 +188,7 @@
         } // ctx
 
         this.requestFrame()
-        this.pause = true
+        // this.pause = true
       } // run
 
     } // methods
