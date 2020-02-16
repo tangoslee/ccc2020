@@ -1,10 +1,11 @@
 import Monster from '@/models/Monster'
 import Contracts from '@/Contracts'
+import { SimpleStore } from '@/stores/simple-store'
 
 class Monsters {
-  constructor () {
+  constructor (hero = null) {
     this.monsters = []
-    this.hero = null
+    this.hero = hero
   }
 
   setHero (hero) {
@@ -12,11 +13,12 @@ class Monsters {
     return this
   }
 
-  init (ctx, width, height) {
+  init () {
+    // console.log('monsters init')
     // Create monsters
     this.monsters = []
     'CNDY'.split('').forEach(ch => {
-      const monster = new Monster(ctx, width, height).setText(ch)
+      const monster = new Monster().setText(ch)
       this.monsters.push(monster)
     })
   }
@@ -26,7 +28,8 @@ class Monsters {
   }
 
   // Drop Monsters
-  async run (virusBorderY) {
+  run () {
+    const { virusBorderY } = SimpleStore.state
     // console.log('monsters', this.monsters.length)
     for (let monster of this.monsters) {
       monster.show()
@@ -34,25 +37,16 @@ class Monsters {
       switch (true) {
         case monster.isHit(this.hero.getBullets()):
           // console.log('monster hit by bullet')
-          return {
-            event: Contracts.EVENT_BULLET_HIT_MONSTER,
-            payload: { monster }
-          }
+          SimpleStore.publish(Contracts.EVENT_BULLET_HIT_MONSTER, { monster })
+          break
         case monster.hitHero(this.hero):
           // console.log('monster hit the hero')
-          return {
-            event: Contracts.EVENT_MONSTER_HIT_HERO,
-            payload: { monster }
-          }
+          SimpleStore.publish(Contracts.EVENT_MONSTER_HIT_HERO, { monster })
           break
         case monster.drop(virusBorderY):
           // console.log('monster dropped!')
-          // this.increasePollutedArea()
-          return {
-            event: Contracts.EVENT_MONSTER_REACH_GROUND,
-            payload: {}
-          }
-        // break
+          SimpleStore.publish(Contracts.EVENT_MONSTER_REACH_GROUND)
+          break
       }
 
     } // E: for loop

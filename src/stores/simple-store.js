@@ -1,3 +1,7 @@
+/**
+ * @author Sangmin Lee
+ * @link https://gist.github.com/tangoslee
+ */
 class Subscriber {
   constructor (subscriber, id) {
     this.subscriber = subscriber
@@ -9,7 +13,7 @@ class Subscriber {
   }
 }
 
-const GameStore = {
+const SimpleStore = {
   state: {},
   subscriber: new Map(),
   initState (state) {
@@ -66,5 +70,5 @@ const GameStore = {
  *  GameStore.publish('mounted', { width: this.width, height: this.height }, { tim: 2 })
  */
 export {
-  GameStore
+  SimpleStore
 }

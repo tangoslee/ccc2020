@@ -1,7 +1,9 @@
 import Contracts from '@/Contracts'
+import { SimpleStore } from '@/stores/simple-store'
 
 class Monster {
-  constructor (ctx, width, height) {
+  constructor () {
+    const { ctx, width, height } = SimpleStore.state
     // console.log('monster created')
 
     this.ctx = ctx
@@ -43,6 +45,7 @@ class Monster {
   }
 
   show () {
+    const { debug } = SimpleStore.state
     // font-family: 'Lacquer', sans-serif;
     // font-family: 'Eater', cursive;
     // font-family: 'Homemade Apple', cursive;
@@ -61,11 +64,11 @@ class Monster {
       this.ctx.fillText(this.text, this.x, this.y)
       // this.ctx.restore()
     } else {
-      // //s:debug
-      // this.ctx.font = `10px serif`
-      // this.ctx.fillStyle = Contracts.COLOR_MONSTER
-      // this.ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x + 20, this.y + 20)
-      // //e: debug
+      if (debug) {
+        this.ctx.font = `10px serif`
+        this.ctx.fillStyle = Contracts.COLOR_MONSTER
+        this.ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x + 20, this.y + 20)
+      }
 
       this.ctx.font = `bold ${this.size}px ${this.font}`
       this.ctx.fillStyle = Contracts.COLOR_MONSTER
@@ -101,24 +104,23 @@ class Monster {
     const y = Math.floor(this.y)
     const w = Math.floor(this.w)
     const h = Math.floor(this.h)
-    // return !(target.x > (x + w) ||
-    //   (target.x + target.w) < x ||
-    //   target.y > (y + h) ||
-    //   (target.y + target.h) < y)
 
-    // const { x: tx, y: ty, w: tw, h: th } = target
-    // console.log({
-    //   monster: { x, y, w, h },
-    //   target: { tx, ty, tw, th }
-    // })
+    // const { debug } = SimpleStore.state
+    // if (debug) {
+    //   const { x: tx, y: ty, w: tw, h: th } = target
+    //   console.log({
+    //     monster: { x, y, w, h },
+    //     target: { tx, ty, tw, th }
+    //   })
     //
-    // console.log({
-    //   release: this.release,
-    //   'x > target.x + target.w': x > target.x + target.w,
-    //   'x + w < target.x': x + w < target.x,
-    //   'y < target.y': y < target.y,
-    //   'y - h > target.y + target.h': y - h > target.y + target.h
-    // })
+    //   console.log({
+    //     release: this.release,
+    //     'x > target.x + target.w': x > target.x + target.w,
+    //     'x + w < target.x': x + w < target.x,
+    //     'y < target.y': y < target.y,
+    //     'y - h > target.y + target.h': y - h > target.y + target.h
+    //   })
+    // }
 
     return !this.release &&
       !(

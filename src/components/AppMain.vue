@@ -12,10 +12,10 @@
    * https://stackoverflow.com/questions/29130129/how-to-fillstyle-with-images-in-canvas-html5
    */
 
+  import { SimpleStore } from '@/stores/simple-store'
   import Contracts from '@/Contracts'
   import Game from '@/models/Game'
   import Hero from '@/models/Hero'
-  import Monster from '@/models/Monster'
   import Monsters from '@/models/Monsters'
 
   export default {
@@ -23,74 +23,71 @@
     data () {
       return {
         pause: false,
-        width: 512,
-        height: 512,
-        // margin: 20,
         game: null,
-        hero: null,
-        monsters: null,
-        // hitScore: 0,
-        // hitScoreInterval: 10,
-        gameMode: 0,
         canvas: null,
-        ctx: null,
-        increaseRate: 0.1, // 10%
-        // timer: {
-        //   intro: 0,
-        //   gameover: 0
-        // },
-        demoMode: false,
-        start: null,
         frame1: null,
         frame2: null
       }
     },
-    computed: {
-      limitMargin () {
-        return 5
-      },
-      xLimit () {
-        return this.width - this.limitMargin
-      },
-      yLimit () {
-        return this.height - this.limitMargin
-      }
-    },
+    computed: {},
     created () {
       // console.log('created')
-      this.game = new Game()
-      this.hero = new Hero()
-      this.monsters = new Monsters()
-      this.monsters.setHero(this.hero)
-      this.game
-        .setHero(this.hero)
-        .setMonsters(this.monsters)
-      this.gameMode = Contracts.INTRO_THE_GAME
+      const hero = new Hero()
+      const monsters = new Monsters(hero)
+      this.game = new Game({ hero, monsters })
+
       this.initBulletIcon()
 
-      this.$nextTick(function () {
+      this.$nextTick(() => {
         window.addEventListener('resize', this.handleResizeEvent)
-        window.addEventListener('keyup', this.updateKeyUpEvent)
-        window.addEventListener('keydown', this.updateKeyDownEvent)
+        window.addEventListener('keyup', ({ keyCode }) => SimpleStore.publish(Contracts.KEY_UP_EVENT, { keyCode }))
+        window.addEventListener('keydown', ({ keyCode }) => SimpleStore.publish(Contracts.KEY_DOWN_EVENT, { keyCode }))
       })
+
+      SimpleStore.initState({
+        debug: true,
+        ctx: null,
+        width: 0,
+        height: 0,
+        gameMode: Contracts.INTRO_THE_GAME,
+        demoMode: false,
+        increaseRate: 0.1,
+        virusBorderY: 0
+      })
+
+      SimpleStore.subscribe(Contracts.GAME_RESIZED_EVENT, ({ width, height }) => {
+        this.canvas.width = width
+        this.canvas.height = height
+        SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { width, height }, { width, height })
+        this.init()
+      })
+
+      SimpleStore.subscribe(Contracts.KEY_UP_EVENT, ({ keyCode }) => {
+        switch (keyCode) {
+          case Contracts.KEY_CODE_P:
+            return this.togglePause()
+          case Contracts.KEY_CODE_C:
+            return this.continueGame()
+        }
+      })
+
     },
     mounted () {
       this.canvas = this.$refs.canvas
-      this.ctx = this.canvas.getContext('2d')
-
+      const ctx = this.canvas.getContext('2d')
+      SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { ctx }, { ctx })
       this.handleResizeEvent()
-
-      this.hero.setGame(this.ctx, this.width, this.height)
-      console.log('mounted', `${this.width}x${this.height}`)
+      // console.log('mounted')
     },
     methods: {
       random (min, max) {
         return Math.floor(Math.random() * max) + min
       },
       handleResizeEvent () {
-        this.width = window.innerWidth - 1
-        this.height = window.innerHeight - 1
-        this.init()
+        const width = window.innerWidth - 1
+        const height = window.innerHeight - 1
+        SimpleStore.publish(Contracts.GAME_RESIZED_EVENT, { width, height })
+        // console.log('resized', `${width}x${height}`)
       },
       requestFrame () {
         if (this.frame1) {
@@ -103,44 +100,13 @@
       init () {
         // console.log('init')
         this.pause = false
-        this.start = null
-        // console.log('canvas', canvas, ', ctx', this.ctx)
-        this.demoMode = false
-        this.timer = {
-          intro: 7 + Math.floor(Date.now() / 1000)
-        }
-
-        this.canvas.width = this.width
-        this.canvas.height = this.height
         this.game.initGame()
-        this.monsters.init(this.ctx, this.width, this.height)
         this.requestFrame()
       },
       initBulletIcon () {
         const image = new Image()
         image.src = Contracts.BULLET_ICON
-        image.onload = () => {
-          this.hero.setBulletIcon(image)
-          console.log('bullet image loaded')
-        }
-      },
-      updateKeyDownEvent (event) {
-        const { keyCode } = event
-        this.hero.updateKeyEvent(keyCode, true)
-      },
-      updateKeyUpEvent (event) {
-        const { keyCode } = event
-        // console.log('upKey', keyCode, this.gameMode)
-        if (keyCode === Contracts.KEY_CODE_P) {
-          return this.togglePause()
-        } else if (keyCode === Contracts.KEY_CODE_S) {
-          return this.game.startGame()
-        } else if (keyCode === Contracts.KEY_CODE_D) {
-          return this.game.startDemo()
-        } else if (keyCode === Contracts.KEY_CODE_C) {
-          return this.continueGame()
-        }
-        this.hero.updateKeyEvent(keyCode, false)
+        image.onload = () => SimpleStore.publish(Contracts.BULLET_ICON_LOADED, { bulletIcon: image })
       },
       togglePause () {
         this.pause = !this.pause
@@ -153,40 +119,10 @@
         this.pause = false
         this.requestFrame()
       },
-
-      /**
-       * https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
-       *
-       * @param timestamp
-       */
       run (timestamp) {
-        // console.log('AppMain.run()', { gameMode: this.gameMode, width: this.width, height: this.height })
-        // console.log((new Date()).getSeconds())
-        // console.log('timestamp', timestamp)
-        if (!this.start) {
-          this.start = timestamp
-        }
-
-        let progress = Math.floor(timestamp - this.start)
-        let frameSeq = Math.floor((progress + 1) / 33)
-        // console.log('progress ', progress, ', idx:', frameSeq)
-
-        if (this.ctx) {
-          this.game
-            .run({
-                timestamp,
-                progress,
-                frameSeq,
-                ctx: this.ctx,
-                width: this.width,
-                height: this.height,
-                gameMode: this.gameMode,
-                increaseRate: this.increaseRate
-              }
-            )
-
-        } // ctx
-
+        // https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
+        // console.log('AppMain.run()', { timestamp })
+        this.game.run(timestamp)
         this.requestFrame()
         // this.pause = true
       } // run

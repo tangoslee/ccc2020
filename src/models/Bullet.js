@@ -1,10 +1,10 @@
 import Contracts from '@/Contracts'
+import { SimpleStore } from '@/stores/simple-store'
 
 class Bullet {
   constructor (ctx, x, y, height) {
     // console.log('bullet created')
 
-    this.ctx = ctx
     this.x = x
     this.initY = y
     this.friction = 0.9
@@ -20,7 +20,6 @@ class Bullet {
 
   reset () {
     // console.log('reset bullet')
-    this.velocityY = 0
     this.speed = 10
     this.distance = 0
     this.y = Math.floor(this.initY)
@@ -32,23 +31,24 @@ class Bullet {
   }
 
   fire (icon) {
+    const { debug, ctx } = SimpleStore.state
     // console.log('drop:', this.y, ' >= ', limit, this.positionY >= limit)
     if (this.distance < this.distanceLimit && this.y > this.marginTop) {
 
-      // //s:debug
-      // this.ctx.font = `10px serif`
-      // this.ctx.fillStyle = Contracts.COLOR_MONSTER
-      // this.ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x + 20, this.y + 20)
-      // //e: debug
+      if (debug) {
+        ctx.font = `10px serif`
+        ctx.fillStyle = Contracts.COLOR_MONSTER
+        ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x, this.y)
+      }
 
-      this.ctx.drawImage(icon, this.x, this.y, this.w, this.h)
+      ctx.drawImage(icon, this.x, this.y, this.w, this.h)
 
-      this.velocityY = this.speed
-      this.velocityY = Math.floor(this.velocityY) * this.friction
-      this.y -= this.velocityY
+      let velocityY = this.speed
+      velocityY = Math.floor(velocityY) * this.friction
+      this.y -= velocityY
       this.distance = Math.floor(this.offsetY - this.y)
 
-      // console.log({ 'bullet speed ': this.velocityY, distance: this.distance, dLimit: this.distanceLimit, y: this.y })
+      // console.log({ 'bullet speed ': velocityY, distance: this.distance, dLimit: this.distanceLimit, y: this.y })
 
       return true
     }

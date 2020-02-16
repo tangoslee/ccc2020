@@ -1,3 +1,4 @@
+import { SimpleStore } from '@/stores/simple-store'
 import Bullet from '@/models/Bullet'
 import Contracts from '@/Contracts'
 
@@ -6,14 +7,14 @@ class Hero {
   constructor () {
     // console.log('hero created')
 
-    this.ctx = null
-    this.boxWidth = null
-    this.boxHeight = null
+    // this.ctx = null
+    // this.boxWidth = null
+    // this.boxHeight = null
 
     this.bulletIcon = '+'
 
     this.limitMargin = 5
-    this.xLimit = 0
+    // this.xLimit = 0
     // this.yLimit = this.boxHeight - this.limitMargin
 
     this.damageRange = [
@@ -35,22 +36,24 @@ class Hero {
     this.maxDamage = 13
 
     this.reset()
-  }
 
-  setGame (ctx, boxWidth, boxHeight) {
-    this.ctx = ctx
-    this.boxWidth = Math.floor(boxWidth)
-    this.boxHeight = Math.floor(boxHeight)
-    this.xLimit = this.boxWidth - this.limitMargin
-  }
+    SimpleStore.subscribe(Contracts.KEY_DOWN_EVENT, ({ keyCode }) => {
+      this.props.keys[keyCode] = true
+    })
 
-  setBulletIcon (bulletIcon) {
-    this.bulletIcon = bulletIcon
+    SimpleStore.subscribe(Contracts.KEY_UP_EVENT, ({ keyCode }) => {
+      this.props.keys[keyCode] = false
+    })
+
+    SimpleStore.subscribe(Contracts.BULLET_ICON_LOADED, ({ bulletIcon }) => {
+      this.bulletIcon = bulletIcon
+    })
+
   }
 
   reset () {
     // console.log('reset hero')
-    this.demoMode = false
+    const { height } = SimpleStore.state
     this.initCountValue = 0
     this.props = {
       keys: [],
@@ -60,7 +63,7 @@ class Hero {
       friction: 0.9 // 0.98,
     }
     this.x = 150
-    this.y = this.boxHeight - 50
+    this.y = height - 50
     this.bullets = []
 
     this.text = 'A'
@@ -69,22 +72,8 @@ class Hero {
     this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})
   }
 
-  tick () {
-    return (Math.floor(Date.now() / 1000) % 30)
-  }
-
-  updateKeyEvent (key, value) {
-    this.props.keys[key] = value
-    // console.log('hero.updateKeyEvent', { key, value })
-  }
-
   getBullets () {
     return this.bullets
-  }
-
-  setDemoMode (demoMode) {
-    this.demoMode = demoMode
-    return this
   }
 
   addText (text) {
@@ -96,41 +85,43 @@ class Hero {
 
   fire (ctx, x, y) {
     // console.log('fire:', x, y)
-    this.bullets.push(new Bullet(ctx, x, y, this.boxHeight))
+    const { height } = SimpleStore.state
+    this.bullets.push(new Bullet(ctx, x, y, height))
   }
 
   /**
    * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline
    * //ctx.textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
-   * @param ctx
    * @param x
-   * @param virusBorderY
    */
-  drawHero (ctx, x, virusBorderY) {
+  drawHero (x, virusBorderY) {
 
+    const { ctx, debug, height } = SimpleStore.state
     ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
     ctx.fillStyle = this.color
 
-    const { width, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(this.text)
+    const { width: textWidth, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(this.text)
 
-    this.w = Math.floor(width)
+    this.w = Math.floor(textWidth)
     this.h = Math.floor(actualBoundingBoxAscent) + Math.floor(actualBoundingBoxDescent)
     let y = Math.floor(virusBorderY) - Math.floor(this.h / 5) // 10% above on the borderY
-    if (y + this.h > this.boxHeight) {
-      y = this.boxHeight - this.h
+    if (y + this.h > height) {
+      y = height - this.h
     }
     // console.log('drawHero', { x, y: this.y })
     ctx.textBaseline = 'top'
     ctx.fillText(this.text, x, y)
 
     // //S:debug
-    // const font = ctx.font
-    // ctx.save()
-    // ctx.font = `10px serif`
-    // ctx.fillStyle = Contracts.COLOR_HERO
-    // ctx.textBaseline = 'top'
-    // ctx.fillText(`x:${x},y:${this.y},w:${this.w},h:${this.h}, font: ${font}`, this.x, y + this.h + 10)
-    // ctx.restore()
+    if (debug) {
+      const font = ctx.font
+      ctx.save()
+      ctx.font = `10px serif`
+      ctx.fillStyle = Contracts.COLOR_MONSTER
+      ctx.textBaseline = 'top'
+      ctx.fillText(`x:${x},y:${this.y},w:${this.w},h:${this.h}, font: ${font}`, this.x, y)
+      ctx.restore()
+    }
     // //E:debug
 
     this.y = y
@@ -164,10 +155,12 @@ class Hero {
     }
   }
 
-  show (virusBorderY) {
+  show () {
+    const { demoMode, ctx, width, virusBorderY } = SimpleStore.state
     let { keys, velocityX, velocityInterval, speed, friction } = this.props
-    let ctx = this.ctx
+    // let ctx = this.ctx
     let x = this.x
+    const xLimit = Math.floor(width) - this.limitMargin
 
     // leftArrow
     if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
@@ -186,7 +179,7 @@ class Hero {
     }
 
     //S: Control Demo
-    if (this.demoMode) {
+    if (demoMode) {
       const { xVelocity, fired } = this.getDemoControl()
       velocityX = xVelocity
       keys[Contracts.KEY_CODE_SPACEBAR] = fired
@@ -197,15 +190,15 @@ class Hero {
     x += velocityX
 
     // console.log('hero speed ', { velocityX, x, virusBorderY })
-    // console.log({ xLimit: this.xLimit, limitMargin: this.limitMargin, w: this.w })
+    // console.log({ xLimit, limitMargin: this.limitMargin, w: this.w })
 
-    if (x >= this.xLimit) {
+    if (x >= xLimit) {
       x = this.limitMargin
     } else if (x <= this.limitMargin - Math.floor(this.w / 2)) {
-      x = this.xLimit
+      x = xLimit
     }
 
-    this.drawHero(ctx, x, virusBorderY)
+    this.drawHero(x, virusBorderY)
 
     this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
 
@@ -225,13 +218,12 @@ class Hero {
       friction
     }
 
-    this.ctx = ctx
+    // this.ctx = ctx
     this.x = Math.floor(x)
   }
 
-  run (virusBorderY, demoMode) {
-    this.setDemoMode(demoMode)
-      .show(virusBorderY)
+  run () {
+    this.show()
   }
 
 }
