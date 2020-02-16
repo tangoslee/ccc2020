@@ -21,6 +21,9 @@ const FONT_GAME_INFO = 'VT323'
 
 const FONT_SIZE_HERO = 96
 
+const HERO = 'HERO'
+const MONSTER = 'MONSTER'
+
 const COLOR_WON_GAME = '#000'
 const COLOR_LOSE_GAME = '#c0392b'
 const COLOR_CLEAN_ZONE = '#fed136'
@@ -83,6 +86,9 @@ export default {
   FONT_HERO,
   FONT_GAME_INFO,
   FONT_SIZE_HERO,
+
+  HERO,
+  MONSTER,
 
   COLOR_WON_GAME,
   COLOR_LOSE_GAME,

@@ -148,7 +148,7 @@ class Game {
     // console.log('virusPollutionDegree', virusPollutionDegree, virusBorderY, this.height)
     const crewSaved = this.hero.text.length - 1
 
-    const damageText = `${this.hero.damage}/${this.hero.maxDamage}`
+    const damageText = `${this.hero.damage.value}/${this.hero.damage.maxDamage}`
     const hitScoreText = `${this.hitScore}`.padStart(5, '0')
     const gameInfoText = `POLLUTION: ${virusPollutionDegree}/100 DAMAGE: ${damageText} SCORE: ${hitScoreText} CREW: ${crewSaved}/4`
 
@@ -345,7 +345,7 @@ class Game {
       case Contracts.ON_THE_GAME:
         // console.log('play game')
         this.showGameInfo()
-        this.hero.run()
+        this.hero.run(timestamp)
         this.monsters.run()
     }
 

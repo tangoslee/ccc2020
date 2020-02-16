@@ -45,7 +45,7 @@
       })
 
       SimpleStore.initState({
-        debug: true,
+        debug: false,
         ctx: null,
         width: 0,
         height: 0,

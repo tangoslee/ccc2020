@@ -1,39 +1,15 @@
 import { SimpleStore } from '@/stores/simple-store'
 import Bullet from '@/models/Bullet'
 import Contracts from '@/Contracts'
+import Damage from '@/models/Damage'
 
 class Hero {
 
   constructor () {
     // console.log('hero created')
 
-    // this.ctx = null
-    // this.boxWidth = null
-    // this.boxHeight = null
-
-    this.bulletIcon = '+'
-
     this.limitMargin = 5
-    // this.xLimit = 0
-    // this.yLimit = this.boxHeight - this.limitMargin
-
-    this.damageRange = [
-      Contracts.COLOR_HERO_SHADE_1,
-      Contracts.COLOR_HERO_SHADE_2,
-      Contracts.COLOR_HERO_SHADE_3,
-      Contracts.COLOR_HERO_SHADE_4,
-      Contracts.COLOR_HERO_SHADE_5,
-      Contracts.COLOR_HERO_SHADE_6,
-      Contracts.COLOR_HERO_SHADE_7,
-      Contracts.COLOR_HERO_SHADE_8,
-      Contracts.COLOR_HERO_SHADE_9,
-      Contracts.COLOR_HERO_SHADE_10,
-      Contracts.COLOR_HERO_SHADE_11,
-      Contracts.COLOR_HERO_SHADE_12,
-      Contracts.COLOR_HERO_SHADE_13
-    ]
-
-    this.maxDamage = 13
+    this.damage = new Damage(Contracts.HERO)
 
     this.reset()
 
@@ -68,7 +44,8 @@ class Hero {
 
     this.text = 'A'
     this.color = Contracts.COLOR_HERO
-    this.damage = 0
+    this.font = Contracts.FONT_HERO
+    this.damage.reset()
     this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})
   }
 
@@ -94,23 +71,23 @@ class Hero {
    * //ctx.textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
    * @param x
    */
-  drawHero (x, virusBorderY) {
+  drawHero (x, y) {
 
-    const { ctx, debug, height } = SimpleStore.state
-    ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
+    const { ctx, debug, width, height } = SimpleStore.state
+    ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${this.font}`
     ctx.fillStyle = this.color
 
     const { width: textWidth, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(this.text)
 
     this.w = Math.floor(textWidth)
     this.h = Math.floor(actualBoundingBoxAscent) + Math.floor(actualBoundingBoxDescent)
-    let y = Math.floor(virusBorderY) - Math.floor(this.h / 5) // 10% above on the borderY
-    if (y + this.h > height) {
-      y = height - this.h
+    let offsetY = Math.floor(y) - Math.floor(this.h / 5) // 10% above on the borderY
+    if (offsetY + this.h > height) {
+      offsetY = height - this.h
     }
     // console.log('drawHero', { x, y: this.y })
     ctx.textBaseline = 'top'
-    ctx.fillText(this.text, x, y)
+    ctx.fillText(this.text, x, offsetY)
 
     // //S:debug
     if (debug) {
@@ -119,33 +96,26 @@ class Hero {
       ctx.font = `10px serif`
       ctx.fillStyle = Contracts.COLOR_MONSTER
       ctx.textBaseline = 'top'
-      ctx.fillText(`x:${x},y:${this.y},w:${this.w},h:${this.h}, font: ${font}`, this.x, y)
+      ctx.fillText(`x:${x},y:${this.y},w:${this.w},h:${this.h}, font: ${font}`, this.x, offsetY)
       ctx.restore()
     }
     // //E:debug
 
-    this.y = y
+    this.y = offsetY
   }
 
   decreaseHealth () {
-    this.damage++
-    this.color = this.damageRange[this.damage]
-    if (this.damage > this.maxDamage) {
-      this.damage = this.maxDamage
-      return false
-    }
-    return true
+    this.damage.increase()
+    const { color, font } = this.damage.style
+    this.color = color
+    this.font = font
+    return this.damage.value < this.damage.maxDamage
   }
 
   getDemoControl () {
     const ms = Date.now()
     const k = Math.floor(ms / 240) % 240 % 10
     const f = Math.floor(ms) % 10
-
-    // if (f < 1) {
-    //   console.log(ms, k, f)
-    // }
-
     const xVelocity = (k > 6) ? -5 : 5
     const fired = f < 1
 
@@ -155,10 +125,10 @@ class Hero {
     }
   }
 
-  show () {
+  show (timestamp) {
     const { demoMode, ctx, width, virusBorderY } = SimpleStore.state
     let { keys, velocityX, velocityInterval, speed, friction } = this.props
-    // let ctx = this.ctx
+    
     let x = this.x
     const xLimit = Math.floor(width) - this.limitMargin
 
@@ -222,8 +192,8 @@ class Hero {
     this.x = Math.floor(x)
   }
 
-  run () {
-    this.show()
+  run (timestamp) {
+    this.show(timestamp)
   }
 
 }
