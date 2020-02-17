@@ -284,9 +284,7 @@ class Game {
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { virusBorderY }, { virusBorderY })
 
     // console.log('increasePollutedArea', { oldVirusBorderY, val, virusBorderY })
-    if (virusBorderY <= 0) {
-      this.lostGame()
-    }
+    return virusBorderY
   }
 
   decreasePollutedArea (increaseRate = 0) {
@@ -335,8 +333,19 @@ class Game {
     this.initGame()
   }
 
+  checkGameResult () {
+    const { height, virusBorderY } = SimpleStore.state
+    const crewSaved = this.hero.text.length - 1
+    this.worldSaved = virusBorderY >= height ? 1 : 0
+    if (this.worldSaved && crewSaved === 4) {
+      this.wonGame()
+    } else if (virusBorderY <= 0) {
+      this.lostGame()
+    }
+  }
+
   run (timestamp) {
-    const { gameMode, height, virusBorderY } = SimpleStore.state
+    const { gameMode } = SimpleStore.state
 
     this.clearScreen()
 
@@ -363,13 +372,7 @@ class Game {
         this.showGameInfo()
         this.hero.run(timestamp)
         this.monsters.run()
-
-        const crewSaved = this.hero.text.length - 1
-        this.worldSaved = virusBorderY >= height ? 1 : 0
-        if (this.worldSaved && crewSaved === 4) {
-          this.wonGame()
-        }
-
+        this.checkGameResult()
     }
 
   }

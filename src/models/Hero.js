@@ -43,11 +43,13 @@ class Hero {
     this.bullets = []
 
     this.demoTimer = null
+    this.demoReverseDirection = false
     this.text = 'A'
     this.color = Contracts.COLOR_HERO
     this.font = Contracts.FONT_HERO
     this.damage.reset()
     this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})
+
   }
 
   getBullets () {
@@ -113,7 +115,7 @@ class Hero {
     return this.damage.value < this.damage.maxDamage
   }
 
-  getDemoControl (timestamp, width) {
+  getDemoControl (timestamp, width, x, leftLimit, rightLimit) {
     if (this.demoTimer === null) {
       this.demoTimer = {
         diff: timestamp - (new Date(timestamp)).getMilliseconds()
@@ -126,8 +128,18 @@ class Hero {
     const ms = Date.now()
     const k = Math.floor(ms / 240) % 240 % 10
     const f = Math.floor(ms) % 10
-    const xVelocity = (k > 6) ? -5 : 5
+    let xVelocity = (k > 6) ? -5 : 5
     const fired = f < 1
+
+    if (x <= leftLimit) {
+      this.demoReverseDirection = false
+    } else if (x >= rightLimit) {
+      this.demoReverseDirection = true
+    }
+
+    if (this.demoReverseDirection) {
+      xVelocity = -xVelocity
+    }
 
     return {
       xVelocity,
@@ -157,9 +169,12 @@ class Hero {
       }
     }
 
+    const leftLimit = this.limitMargin
+    const rightLimit = Math.floor(width - this.w - this.limitMargin)
+
     //S: Control Demo
     if (demoMode) {
-      const { xVelocity, fired } = this.getDemoControl(timestamp, width)
+      const { xVelocity, fired } = this.getDemoControl(timestamp, width, x, leftLimit, rightLimit)
       velocityX = xVelocity
       keys[Contracts.KEY_CODE_SPACEBAR] = fired
     }
@@ -180,8 +195,7 @@ class Hero {
     //   x = xLimit // right side
     //   x = 0
     // }
-    const leftLimit = this.limitMargin
-    const rightLimit = Math.floor(width - this.w - this.limitMargin)
+
     if (x <= leftLimit) {
       x = leftLimit
     } else if (x >= rightLimit) {
