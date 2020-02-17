@@ -52,7 +52,7 @@
         height: 0,
         gameMode: Contracts.INTRO_THE_GAME,
         demoMode: false,
-        increaseRate: 0.1,
+        increaseRate: 0.05,
         virusBorderY: 0
       })
 
@@ -91,11 +91,18 @@
         // console.log('resized', `${width}x${height}`)
       },
       requestFrame () {
+        const { gameMode, demoMode } = SimpleStore.state
         if (this.frame1) {
           window.cancelAnimationFrame(this.frame1)
         }
+        if (demoMode && this.frame2) {
+          window.cancelAnimationFrame(this.frame2)
+        }
         if (!this.pause) {
           this.frame1 = window.requestAnimationFrame(this.run)
+          if (gameMode === Contracts.ON_THE_GAME) {
+            this.frame2 = window.requestAnimationFrame(this.run)
+          }
         }
       },
       init () {
@@ -132,9 +139,10 @@
         }
         const { diff } = this.timer
         const seconds = (new Date(timestamp - diff)).getSeconds()
-        console.log(seconds)
+        // console.log(seconds)
 
         this.game.run(timestamp)
+
         this.requestFrame()
         // this.pause = true
       } // run

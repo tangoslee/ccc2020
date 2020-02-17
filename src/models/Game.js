@@ -17,7 +17,6 @@ class Game {
 
     this.hitScore = 0
     this.hitScoreInterval = 1
-    // this.gameMode = null
 
     // timer
     this.introTimer = null
@@ -75,6 +74,7 @@ class Game {
     this.monsters.init()
 
     this.hitScore = 0
+    this.worldSaved = 0
     if (this.hero) {
       this.hero.reset()
     }
@@ -94,10 +94,10 @@ class Game {
     return this
   }
 
-  displayText (text, ctx, lineHeightInterval, offsetX = null, offsetY = null) {
-    const { width, height } = SimpleStore.state
+  displayText (text, lineHeightInterval, offsetX = null, offsetY = null) {
+    const { ctx, width, height } = SimpleStore.state
     let lineHeight = lineHeightInterval
-    for (let line of text) {
+    for (let line of text.split('\n')) {
       const x = offsetX !== null ? offsetX : Math.floor(width) * 0.5 - ctx.measureText(line).width / 2
       const y = offsetY !== null ? offsetY : Math.floor(height) * 0.1
 
@@ -160,11 +160,14 @@ class Game {
 
     const virusPollutionDegree = Math.floor((height - virusBorderY) / height * 100)
     // console.log('virusPollutionDegree', virusPollutionDegree, virusBorderY, this.height)
+
     const crewSaved = this.hero.text.length - 1
+    const worldSaved = this.worldSaved
 
     const damageText = `${this.hero.damage.value}/${this.hero.damage.maxDamage}`
     const hitScoreText = `${this.hitScore}`.padStart(5, '0')
-    const gameInfoText = `POLLUTION: ${virusPollutionDegree}/100 DAMAGE: ${damageText} SCORE: ${hitScoreText} CREW: ${crewSaved}/4`
+    const gameInfoText = `POLLUTION: ${virusPollutionDegree}/100 DAMAGE: ${damageText} SCORE: ${hitScoreText}\n
+     SAVE CREW: ${crewSaved}/4 WORLD: ${worldSaved}/1`
 
     let fontSize = 36
 
@@ -175,10 +178,11 @@ class Game {
     ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
     ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
 
-    const x = Math.floor(width) * 0.5 - ctx.measureText(gameInfoText).width / 2
-    const y = Math.floor(height) * 0.1
-
-    ctx.fillText(gameInfoText, x, y)
+    // const x = Math.floor(width) * 0.5 - ctx.measureText(gameInfoText).width / 2
+    // const y = Math.floor(height) * 0.1
+    this.displayText(gameInfoText, Math.floor(fontSize * 0.65))
+    //
+    // ctx.fillText(gameInfoText, x, y)
   }
 
   showGameIntro (timestamp) {
@@ -199,7 +203,6 @@ class Game {
 
     const introTexts = Contracts.INTRO_TEXT
       .replace('##SEC##', `${seconds}`)
-      .split('\n')
 
     let fontSize = 36
     let lineHeightInterval = 36
@@ -212,7 +215,7 @@ class Game {
     ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
     ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
 
-    this.displayText(introTexts, ctx, lineHeightInterval)
+    this.displayText(introTexts, lineHeightInterval)
     // let lineHeight = lineHeightInterval
     // for (let introText of introTexts) {
     //   const x = Math.floor(width) * 0.5 - ctx.measureText(introText).width / 2
@@ -281,7 +284,7 @@ class Game {
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { virusBorderY }, { virusBorderY })
 
     // console.log('increasePollutedArea', { oldVirusBorderY, val, virusBorderY })
-    if (virusBorderY === 0) {
+    if (virusBorderY <= 0) {
       this.lostGame()
     }
   }
@@ -296,10 +299,10 @@ class Game {
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { virusBorderY }, { virusBorderY })
 
     // console.log('decreasePollutedArea', { oldVirusBorderY, val, virusBorderY })
-
-    if (virusBorderY === height) {
-      this.wonGame()
-    }
+    // if (virusBorderY === height) {
+    //   this.wonGame()
+    // }
+    return virusBorderY
   }
 
   wonGame () {
@@ -313,7 +316,7 @@ class Game {
   }
 
   startDemo () {
-    const increaseRate = 0.075
+    const increaseRate = 0.067
     const demoMode = true
     const gameMode = Contracts.ON_THE_GAME
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { gameMode }, { gameMode, demoMode, increaseRate })
@@ -333,7 +336,7 @@ class Game {
   }
 
   run (timestamp) {
-    const { gameMode } = SimpleStore.state
+    const { gameMode, height, virusBorderY } = SimpleStore.state
 
     this.clearScreen()
 
@@ -360,6 +363,13 @@ class Game {
         this.showGameInfo()
         this.hero.run(timestamp)
         this.monsters.run()
+
+        const crewSaved = this.hero.text.length - 1
+        this.worldSaved = virusBorderY >= height ? 1 : 0
+        if (this.worldSaved && crewSaved === 4) {
+          this.wonGame()
+        }
+
     }
 
   }

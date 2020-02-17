@@ -140,7 +140,6 @@ class Hero {
     let { keys, velocityX, velocityInterval, speed, friction } = this.props
 
     let x = this.x
-    const xLimit = Math.floor(width) - this.limitMargin
 
     // leftArrow
     if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
@@ -171,11 +170,22 @@ class Hero {
 
     // console.log('hero speed ', { velocityX, x, virusBorderY })
     // console.log({ xLimit, limitMargin: this.limitMargin, w: this.w })
-
-    if (x >= xLimit) {
-      x = this.limitMargin
-    } else if (x <= this.limitMargin - Math.floor(this.w / 2)) {
-      x = xLimit
+    // loop
+    // const xLimit = Math.floor(width) - this.limitMargin
+    // if (x >= xLimit) {
+    //   // reach to the right
+    //   x = this.limitMargin  // left side
+    // } else if (x <= this.limitMargin - Math.floor(this.w / 2)) {
+    //   // reach to the left
+    //   x = xLimit // right side
+    //   x = 0
+    // }
+    const leftLimit = this.limitMargin
+    const rightLimit = Math.floor(width - this.w - this.limitMargin)
+    if (x <= leftLimit) {
+      x = leftLimit
+    } else if (x >= rightLimit) {
+      x = rightLimit
     }
 
     this.drawHero(x, virusBorderY)
