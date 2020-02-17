@@ -29,6 +29,7 @@
   body {
     margin: 0;
     height: 100vh;
+    /*font-family: 'VT323', monospace;*/
     /*font-family: 'Lacquer', sans-serif;*/
     /*font-family: 'Eater', cursive;*/
     /*font-family: 'Homemade Apple', cursive;*/
