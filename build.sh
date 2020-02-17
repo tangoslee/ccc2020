@@ -11,5 +11,5 @@ npm run build && {
 } && {
   [ -f "$TMP" ] && rm -f "$TMP"
 } && {
-  [ -d ./dist ] && mv -v ./dist ./docs
+  [ -d ./docs ] && rm -rf "./docs" && [ -d ./dist ] && mv -v ./dist ./docs
 }
