@@ -59,13 +59,6 @@
         virusBorderY: 0
       })
 
-      SimpleStore.subscribe(Contracts.GAME_RESIZED_EVENT, ({ width, height }) => {
-        this.canvas.width = width
-        this.canvas.height = height
-        SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { width, height }, { width, height })
-        this.init()
-      })
-
       SimpleStore.subscribe(Contracts.KEY_UP_EVENT, ({ keyCode }) => {
         switch (keyCode) {
           case Contracts.KEY_CODE_P:
@@ -88,9 +81,11 @@
         return Math.floor(Math.random() * max) + min
       },
       handleResizeEvent () {
-        const width = window.innerWidth - 1
-        const height = window.innerHeight - 1
-        SimpleStore.publish(Contracts.GAME_RESIZED_EVENT, { width, height })
+        this.canvas.width = window.innerWidth - 1
+        this.canvas.height = window.innerHeight - 1
+        const { width, height } = this.canvas
+        SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { width, height }, { width, height })
+        this.init()
         // console.log('resized', `${width}x${height}`)
       },
       requestFrame () {
@@ -157,7 +152,5 @@
 <style scoped>
   main {
     height: 100%;
-    /* background-color: #fed136;
-    border-color: #fed136; */
   }
 </style>

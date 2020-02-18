@@ -11,14 +11,6 @@ class Hero {
     this.limitMargin = 5
     this.damage = new Damage(Contracts.HERO)
 
-    // SimpleStore.subscribe(Contracts.KEY_DOWN_EVENT, ({ keyCode }) => {
-    //   this.props.keys[keyCode] = true
-    // })
-    //
-    // SimpleStore.subscribe(Contracts.KEY_UP_EVENT, ({ keyCode }) => {
-    //   this.props.keys[keyCode] = false
-    // })
-
     this.isLeader = false
     this.text = initText
     this.initText = initText
@@ -28,27 +20,17 @@ class Hero {
   reset () {
     // console.log('reset hero:', this.id)
     const { height, ctx } = SimpleStore.state
-    this.initCountValue = 0
-    // this.props = {
-    //   keys: [],
-    //   velocityX: 0,
-    //   velocityInterval: 5,
-    //   speed: 50,
-    //   friction: 0.9 // 0.98,
-    // }
+
     this.x = this.initX
     this.y = height - 50
     this.w = 0
     this.bullets = []
     this.shiftX = 0
 
-    this.demoTimer = null
-    this.demoReverseDirection = false
     this.text = this.initText
     this.color = Contracts.COLOR_HERO
     this.font = Contracts.FONT_HERO
     this.damage.reset()
-    this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})
 
     return this
   }
@@ -138,109 +120,6 @@ class Hero {
     this.font = font
     return this.isAlive
   }
-
-  // getDemoControl (timestamp, width, x, leftLimit, rightLimit) {
-  //   if (this.demoTimer === null) {
-  //     this.demoTimer = {
-  //       diff: timestamp - (new Date(timestamp)).getMilliseconds()
-  //     }
-  //   }
-  //   const { diff } = this.demoTimer
-  //   const seconds = (new Date(timestamp - diff)).getSeconds()
-  //   // const seconds = (new Date(timestamp - diff)).getMilliseconds()
-  //   // console.log('demo', seconds)
-  //   const ms = Date.now()
-  //   const k = Math.floor(ms / 240) % 240 % 10
-  //   const f = Math.floor(ms) % 10
-  //   let xVelocity = (k > 6) ? -5 : 5
-  //   const fired = f < 1
-  //
-  //   if (x <= leftLimit) {
-  //     this.demoReverseDirection = false
-  //   } else if (x >= rightLimit) {
-  //     this.demoReverseDirection = true
-  //   }
-  //
-  //   if (this.demoReverseDirection) {
-  //     xVelocity = -xVelocity
-  //   }
-  //
-  //   return {
-  //     xVelocity,
-  //     fired
-  //   }
-  // }
-
-  // show (timestamp) {
-  //   const { demoMode, ctx, width, virusBorderY } = SimpleStore.state
-  //   let { keys, velocityX, velocityInterval, speed, friction } = this.props
-  //
-  //   let x = this.x
-  //
-  //   // leftArrow
-  //   if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
-  //     // console.log('show leftArrow', { velocityX, speed: -speed })
-  //     if (velocityX > -speed) {
-  //       velocityX -= velocityInterval
-  //     }
-  //   }
-  //
-  //   // rightArrow
-  //   if (keys[Contracts.KEY_CODE_RIGHT_ARROW]) {
-  //     // console.log('show rightArrow', { velocityX, speed: -speed })
-  //     if (velocityX < speed) {
-  //       velocityX += velocityInterval
-  //     }
-  //   }
-  //
-  //   const leftLimit = this.limitMargin
-  //   const rightLimit = Math.floor(width - this.w - this.limitMargin)
-  //
-  //   //S: Control Demo
-  //   if (demoMode) {
-  //     const { xVelocity, fired } = this.getDemoControl(timestamp, width, x, leftLimit, rightLimit)
-  //     velocityX = xVelocity
-  //     keys[Contracts.KEY_CODE_SPACEBAR] = fired
-  //   }
-  //   // E: Control Demo
-  //
-  //   velocityX = Math.floor(velocityX) * friction
-  //   x += velocityX
-  //
-  //   if (x <= leftLimit) {
-  //     x = leftLimit
-  //   } else if (x >= rightLimit) {
-  //     x = rightLimit
-  //   }
-  //
-  //   this.drawHero(x, virusBorderY)
-  //
-  //   this.bullets = [...this.bullets].filter(bullet => bullet.fire())
-  //
-  //   // fire by spacebar
-  //   if (keys[Contracts.KEY_CODE_SPACEBAR]) {
-  //     const cText = ctx.measureText(this.text)
-  //     // console.log(cText)
-  //     keys[Contracts.KEY_CODE_SPACEBAR] = false
-  //     const bulletX = x + this.w / 2 + cText.actualBoundingBoxLeft
-  //     this.fire(ctx, bulletX, this.y - 10)
-  //   }
-  //
-  //   this.props = {
-  //     ...this.props,
-  //     keys,
-  //     velocityX,
-  //     speed,
-  //     friction
-  //   }
-  //
-  //   // this.ctx = ctx
-  //   this.x = Math.floor(x)
-  // }
-  //
-  // run (timestamp) {
-  //   this.show(timestamp)
-  // }
 
 }
 
