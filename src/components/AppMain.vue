@@ -51,8 +51,9 @@
         debug: false,
         ctx: null,
         bulletIcon: null,
-        width: 0,
-        height: 0,
+        fullscreen: false,
+        width: 900,
+        height: 900,
         gameMode: Contracts.INTRO_THE_GAME,
         demoMode: false,
         increaseRate: 0.05,
@@ -65,6 +66,8 @@
             return this.togglePause()
           case Contracts.KEY_CODE_C:
             return this.continueGame()
+          case Contracts.KEY_CODE_F:
+            return this.useFullScreen()
         }
       })
 
@@ -81,9 +84,19 @@
         return Math.floor(Math.random() * max) + min
       },
       handleResizeEvent () {
-        this.canvas.width = window.innerWidth - 1
-        this.canvas.height = window.innerHeight - 1
-        const { width, height } = this.canvas
+        let { fullscreen, width, height } = SimpleStore.state
+        if (fullscreen) {
+          width = window.innerWidth - 1
+          height = window.innerHeight - 1
+        } else {
+          width = 900
+          height = 900
+        }
+
+        // console.log({ fullscreen, width, height })
+        this.canvas.width = width
+        this.canvas.height = height
+
         SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { width, height }, { width, height })
         this.init()
         // console.log('resized', `${width}x${height}`)
@@ -125,6 +138,14 @@
       continueGame () {
         this.pause = false
         this.requestFrame()
+      },
+      useFullScreen () {
+        const { fullscreen: old } = SimpleStore.state
+        const payload = {
+          fullscreen: !old
+        }
+        SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, payload, payload)
+        this.handleResizeEvent()
       },
       run (timestamp) {
         // https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
