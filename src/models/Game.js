@@ -4,14 +4,6 @@ import Contracts from '@/Contracts'
 class Game {
   constructor ({ hero, monsters }) {
 
-    this.cfg = {
-      x: 0,
-      y: 0,
-      width: 900,
-      height: 900
-      // virusBorderY: 900
-    }
-
     this.hero = hero || null
     this.monsters = monsters || null
 
@@ -20,7 +12,6 @@ class Game {
 
     // timer
     this.introTimer = null
-    this.endingTimer = null
     this.demoTimer = null
 
     // key up event
@@ -32,15 +23,6 @@ class Game {
         case Contracts.KEY_CODE_D:
           this.startDemo()
           break
-      }
-    })
-
-    // resize event @deprecated
-    SimpleStore.subscribe(Contracts.GAME_RESIZED_EVENT, ({ width, height }) => {
-      this.cfg = {
-        ...this.cfg,
-        width: Math.floor(width),
-        height: Math.floor(height)
       }
     })
 
@@ -59,10 +41,9 @@ class Game {
       } else if (hero.isLeader) {
         // gameOver
         this.lostGame()
-      } else {
-
       }
     })
+
     SimpleStore.subscribe(Contracts.EVENT_MONSTER_REACH_GROUND, () => this.increasePollutedArea())
   }
 
@@ -83,7 +64,6 @@ class Game {
     }
 
     this.introTimer = null
-    this.endingTimer = null
     this.demoTimer = null
   }
 
@@ -181,11 +161,7 @@ class Game {
     ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
     ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
 
-    // const x = Math.floor(width) * 0.5 - ctx.measureText(gameInfoText).width / 2
-    // const y = Math.floor(height) * 0.1
     this.displayText(gameInfoText, Math.floor(fontSize * 0.65))
-    //
-    // ctx.fillText(gameInfoText, x, y)
   }
 
   showGameIntro (timestamp) {
@@ -219,15 +195,6 @@ class Game {
     ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
 
     this.displayText(introTexts, lineHeightInterval)
-    // let lineHeight = lineHeightInterval
-    // for (let introText of introTexts) {
-    //   const x = Math.floor(width) * 0.5 - ctx.measureText(introText).width / 2
-    //   const y = Math.floor(height) * 0.1
-    //
-    //   ctx.fillText(introText, x, y + lineHeight)
-    //   lineHeight += lineHeightInterval
-    // }
-
   }
 
   showGameEnding (timestamp) {
@@ -295,16 +262,10 @@ class Game {
 
   decreasePollutedArea (increaseRate = 0) {
     const { height, virusBorderY: oldVirusBorderY, increaseRate: defaultIncreaseRate } = SimpleStore.state
-    // this.cfg.virusBorderY += Math.floor(height * this.increaseRate)
     let val = Math.floor(oldVirusBorderY) + Math.floor(height * (increaseRate || defaultIncreaseRate))
 
     const virusBorderY = val > height ? height : val
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { virusBorderY }, { virusBorderY })
-
-    // console.log('decreasePollutedArea', { oldVirusBorderY, val, virusBorderY })
-    // if (virusBorderY === height) {
-    //   this.wonGame()
-    // }
     return virusBorderY
   }
 

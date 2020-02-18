@@ -1,5 +1,4 @@
 import { SimpleStore } from '@/stores/simple-store'
-import Bullet from '@/models/Bullet'
 import Contracts from '@/Contracts'
 
 class Avengers {
@@ -83,10 +82,6 @@ class Avengers {
   // E: Hero Methods
 
   // S: Avengers
-  // get x () {
-  //   return (Object.keys(this.memberMap).find(k => this.memberMap[k] === 1) || { x: 0 }).x
-  // }
-
   get leaderX () {
     return this.leader.x
   }
@@ -211,7 +206,6 @@ class Avengers {
       x = rightLimit
     }
 
-    // this.drawHero(x, virusBorderY)
     [...this.heros]
       .filter(hero => {
         if (!hero.isAlive) {
@@ -229,12 +223,6 @@ class Avengers {
     if (keys[Contracts.KEY_CODE_SPACEBAR]) {
       keys[Contracts.KEY_CODE_SPACEBAR] = false
       this.heros.forEach(hero => hero.fire())
-
-      // const cText = ctx.measureText(this.text)
-      // // console.log(cText)
-      // const bulletX = x + this.w / 2 + cText.actualBoundingBoxLeft
-      // // hero.fire(ctx, bulletX, this.y - 10)
-      // hero.fire(ctx, bulletX, virusBorderY - 10)
     }
 
     this.props = {
