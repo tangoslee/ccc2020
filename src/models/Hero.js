@@ -5,68 +5,85 @@ import Damage from '@/models/Damage'
 
 class Hero {
 
-  constructor () {
-    // console.log('hero created')
-
+  constructor (initText = 'A', initX = 0) {
+    // console.log('hero created', { initText, initX })
+    this.initX = initX
     this.limitMargin = 5
     this.damage = new Damage(Contracts.HERO)
 
+    // SimpleStore.subscribe(Contracts.KEY_DOWN_EVENT, ({ keyCode }) => {
+    //   this.props.keys[keyCode] = true
+    // })
+    //
+    // SimpleStore.subscribe(Contracts.KEY_UP_EVENT, ({ keyCode }) => {
+    //   this.props.keys[keyCode] = false
+    // })
+
+    this.isLeader = false
+    this.text = initText
+    this.initText = initText
     this.reset()
-
-    SimpleStore.subscribe(Contracts.KEY_DOWN_EVENT, ({ keyCode }) => {
-      this.props.keys[keyCode] = true
-    })
-
-    SimpleStore.subscribe(Contracts.KEY_UP_EVENT, ({ keyCode }) => {
-      this.props.keys[keyCode] = false
-    })
-
-    SimpleStore.subscribe(Contracts.BULLET_ICON_LOADED, ({ bulletIcon }) => {
-      this.bulletIcon = bulletIcon
-    })
-
   }
 
   reset () {
-    // console.log('reset hero')
-    const { height } = SimpleStore.state
+    // console.log('reset hero:', this.id)
+    const { height, ctx } = SimpleStore.state
     this.initCountValue = 0
-    this.props = {
-      keys: [],
-      velocityX: 0,
-      velocityInterval: 5,
-      speed: 50,
-      friction: 0.9 // 0.98,
-    }
-    this.x = 150
+    // this.props = {
+    //   keys: [],
+    //   velocityX: 0,
+    //   velocityInterval: 5,
+    //   speed: 50,
+    //   friction: 0.9 // 0.98,
+    // }
+    this.x = this.initX
     this.y = height - 50
+    this.w = 0
     this.bullets = []
+    this.shiftX = 0
 
     this.demoTimer = null
     this.demoReverseDirection = false
-    this.text = 'A'
+    this.text = this.initText
     this.color = Contracts.COLOR_HERO
     this.font = Contracts.FONT_HERO
     this.damage.reset()
     this.candyMap = [...'CANDY'].reduce((p, c) => ({ ...p, [c]: false }), {})
 
+    return this
   }
 
-  getBullets () {
-    return this.bullets
+  get id () {
+    return this.text
   }
 
-  addText (text) {
-    // FIXME to be better...
-    [...`${this.text}${text}`]
-      .forEach(c => this.candyMap[c] = true)
-    this.text = Object.keys(this.candyMap).filter(c => this.candyMap[c]).join('')
+  get crewSaved () {
+    return this.text.length - 1
   }
 
-  fire (ctx, x, y) {
-    // console.log('fire:', x, y)
-    const { height } = SimpleStore.state
-    this.bullets.push(new Bullet(ctx, x, y, height))
+  get isAlive () {
+    return this.damage.value < this.damage.maxDamage
+  }
+
+  setLeader () {
+    this.isLeader = true
+    return this
+  }
+
+  setShiftX (val) {
+    this.shiftX = val
+    // console.log(`shiftX of ${this.id}: shiftX:${val}, x:${this.x} -> ${this.x + val}`)
+    return this
+  }
+
+  fire () {
+    const { ctx, height, bulletIcon, virusBorderY } = SimpleStore.state
+    const cText = ctx.measureText(this.text)
+    // console.log(cText)
+    const bulletX = this.x + this.w / 2 + cText.actualBoundingBoxLeft
+    const bulletY = this.y - 10
+    // console.log('fire:', this.id, bulletX, bulletY, 'x:', this.x, ', height:', height)
+    this.bullets.push(new Bullet(ctx, bulletX, bulletY, height, bulletIcon))
   }
 
   /**
@@ -81,14 +98,16 @@ class Hero {
     ctx.fillStyle = this.color
 
     const { width: textWidth, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(this.text)
-
     this.w = Math.floor(textWidth)
     this.h = Math.floor(actualBoundingBoxAscent) + Math.floor(actualBoundingBoxDescent)
+
     let offsetY = Math.floor(y) - Math.floor(this.h / 5) // 10% above on the borderY
     if (offsetY + this.h > height) {
       offsetY = height - this.h
     }
-    // console.log('drawHero', { x, y: this.y })
+
+    x += Math.floor(this.shiftX)
+    // console.log('drawHero', { id: this.id, x, y: this.y })
     ctx.textBaseline = 'top'
     ctx.fillText(this.text, x, offsetY)
 
@@ -103,132 +122,125 @@ class Hero {
       ctx.restore()
     }
     // //E:debug
-
+    this.x = x
     this.y = offsetY
   }
 
   decreaseHealth () {
-    this.damage.increase()
+    const { god } = SimpleStore.state
+    if (god) {
+      return true
+    }
+    const damage = this.isLeader ? 1 : Math.floor(this.damage.maxDamage / 2)
+    this.damage.increase(damage)
     const { color, font } = this.damage.style
     this.color = color
     this.font = font
-    return this.damage.value < this.damage.maxDamage
+    return this.isAlive
   }
 
-  getDemoControl (timestamp, width, x, leftLimit, rightLimit) {
-    if (this.demoTimer === null) {
-      this.demoTimer = {
-        diff: timestamp - (new Date(timestamp)).getMilliseconds()
-      }
-    }
-    const { diff } = this.demoTimer
-    const seconds = (new Date(timestamp - diff)).getSeconds()
-    // const seconds = (new Date(timestamp - diff)).getMilliseconds()
-    // console.log('demo', seconds)
-    const ms = Date.now()
-    const k = Math.floor(ms / 240) % 240 % 10
-    const f = Math.floor(ms) % 10
-    let xVelocity = (k > 6) ? -5 : 5
-    const fired = f < 1
+  // getDemoControl (timestamp, width, x, leftLimit, rightLimit) {
+  //   if (this.demoTimer === null) {
+  //     this.demoTimer = {
+  //       diff: timestamp - (new Date(timestamp)).getMilliseconds()
+  //     }
+  //   }
+  //   const { diff } = this.demoTimer
+  //   const seconds = (new Date(timestamp - diff)).getSeconds()
+  //   // const seconds = (new Date(timestamp - diff)).getMilliseconds()
+  //   // console.log('demo', seconds)
+  //   const ms = Date.now()
+  //   const k = Math.floor(ms / 240) % 240 % 10
+  //   const f = Math.floor(ms) % 10
+  //   let xVelocity = (k > 6) ? -5 : 5
+  //   const fired = f < 1
+  //
+  //   if (x <= leftLimit) {
+  //     this.demoReverseDirection = false
+  //   } else if (x >= rightLimit) {
+  //     this.demoReverseDirection = true
+  //   }
+  //
+  //   if (this.demoReverseDirection) {
+  //     xVelocity = -xVelocity
+  //   }
+  //
+  //   return {
+  //     xVelocity,
+  //     fired
+  //   }
+  // }
 
-    if (x <= leftLimit) {
-      this.demoReverseDirection = false
-    } else if (x >= rightLimit) {
-      this.demoReverseDirection = true
-    }
-
-    if (this.demoReverseDirection) {
-      xVelocity = -xVelocity
-    }
-
-    return {
-      xVelocity,
-      fired
-    }
-  }
-
-  show (timestamp) {
-    const { demoMode, ctx, width, virusBorderY } = SimpleStore.state
-    let { keys, velocityX, velocityInterval, speed, friction } = this.props
-
-    let x = this.x
-
-    // leftArrow
-    if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
-      // console.log('show leftArrow', { velocityX, speed: -speed })
-      if (velocityX > -speed) {
-        velocityX -= velocityInterval
-      }
-    }
-
-    // rightArrow
-    if (keys[Contracts.KEY_CODE_RIGHT_ARROW]) {
-      // console.log('show rightArrow', { velocityX, speed: -speed })
-      if (velocityX < speed) {
-        velocityX += velocityInterval
-      }
-    }
-
-    const leftLimit = this.limitMargin
-    const rightLimit = Math.floor(width - this.w - this.limitMargin)
-
-    //S: Control Demo
-    if (demoMode) {
-      const { xVelocity, fired } = this.getDemoControl(timestamp, width, x, leftLimit, rightLimit)
-      velocityX = xVelocity
-      keys[Contracts.KEY_CODE_SPACEBAR] = fired
-    }
-    // E: Control Demo
-
-    velocityX = Math.floor(velocityX) * friction
-    x += velocityX
-
-    // console.log('hero speed ', { velocityX, x, virusBorderY })
-    // console.log({ xLimit, limitMargin: this.limitMargin, w: this.w })
-    // loop
-    // const xLimit = Math.floor(width) - this.limitMargin
-    // if (x >= xLimit) {
-    //   // reach to the right
-    //   x = this.limitMargin  // left side
-    // } else if (x <= this.limitMargin - Math.floor(this.w / 2)) {
-    //   // reach to the left
-    //   x = xLimit // right side
-    //   x = 0
-    // }
-
-    if (x <= leftLimit) {
-      x = leftLimit
-    } else if (x >= rightLimit) {
-      x = rightLimit
-    }
-
-    this.drawHero(x, virusBorderY)
-
-    this.bullets = [...this.bullets].filter(bullet => bullet.fire(this.bulletIcon))
-
-    // fire by spacebar
-    if (keys[Contracts.KEY_CODE_SPACEBAR]) {
-      const cText = ctx.measureText(this.text)
-      // console.log(cText)
-      keys[Contracts.KEY_CODE_SPACEBAR] = false
-      this.fire(ctx, x + this.w / 2 + cText.actualBoundingBoxLeft, this.y - 10)
-    }
-
-    this.props = {
-      ...this.props,
-      keys,
-      velocityX,
-      speed,
-      friction
-    }
-
-    // this.ctx = ctx
-    this.x = Math.floor(x)
-  }
-
-  run (timestamp) {
-    this.show(timestamp)
-  }
+  // show (timestamp) {
+  //   const { demoMode, ctx, width, virusBorderY } = SimpleStore.state
+  //   let { keys, velocityX, velocityInterval, speed, friction } = this.props
+  //
+  //   let x = this.x
+  //
+  //   // leftArrow
+  //   if (keys[Contracts.KEY_CODE_LEFT_ARROW]) {
+  //     // console.log('show leftArrow', { velocityX, speed: -speed })
+  //     if (velocityX > -speed) {
+  //       velocityX -= velocityInterval
+  //     }
+  //   }
+  //
+  //   // rightArrow
+  //   if (keys[Contracts.KEY_CODE_RIGHT_ARROW]) {
+  //     // console.log('show rightArrow', { velocityX, speed: -speed })
+  //     if (velocityX < speed) {
+  //       velocityX += velocityInterval
+  //     }
+  //   }
+  //
+  //   const leftLimit = this.limitMargin
+  //   const rightLimit = Math.floor(width - this.w - this.limitMargin)
+  //
+  //   //S: Control Demo
+  //   if (demoMode) {
+  //     const { xVelocity, fired } = this.getDemoControl(timestamp, width, x, leftLimit, rightLimit)
+  //     velocityX = xVelocity
+  //     keys[Contracts.KEY_CODE_SPACEBAR] = fired
+  //   }
+  //   // E: Control Demo
+  //
+  //   velocityX = Math.floor(velocityX) * friction
+  //   x += velocityX
+  //
+  //   if (x <= leftLimit) {
+  //     x = leftLimit
+  //   } else if (x >= rightLimit) {
+  //     x = rightLimit
+  //   }
+  //
+  //   this.drawHero(x, virusBorderY)
+  //
+  //   this.bullets = [...this.bullets].filter(bullet => bullet.fire())
+  //
+  //   // fire by spacebar
+  //   if (keys[Contracts.KEY_CODE_SPACEBAR]) {
+  //     const cText = ctx.measureText(this.text)
+  //     // console.log(cText)
+  //     keys[Contracts.KEY_CODE_SPACEBAR] = false
+  //     const bulletX = x + this.w / 2 + cText.actualBoundingBoxLeft
+  //     this.fire(ctx, bulletX, this.y - 10)
+  //   }
+  //
+  //   this.props = {
+  //     ...this.props,
+  //     keys,
+  //     velocityX,
+  //     speed,
+  //     friction
+  //   }
+  //
+  //   // this.ctx = ctx
+  //   this.x = Math.floor(x)
+  // }
+  //
+  // run (timestamp) {
+  //   this.show(timestamp)
+  // }
 
 }
 
