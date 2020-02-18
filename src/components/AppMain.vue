@@ -51,7 +51,7 @@
         debug: false,
         ctx: null,
         bulletIcon: null,
-        fullscreen: false,
+        fullscreen: true,
         width: 900,
         height: 900,
         gameMode: Contracts.INTRO_THE_GAME,
