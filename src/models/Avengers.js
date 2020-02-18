@@ -3,18 +3,18 @@ import Bullet from '@/models/Bullet'
 import Contracts from '@/Contracts'
 
 class Avengers {
-  constructor (leader = null) {
+  constructor (leader) {
 
     this.heroMap = {}
     this.members = 'CANDY'
     this.memberMap = [...this.members].reduce((p, c) => ({ ...p, [c]: -1 }), {})
     this.limitMargin = 5
 
-    if (leader) {
-      this.leader = leader.setLeader()
-      this.heroMap[leader.id] = leader
-      this.join(leader)
+    if (!leader) {
+      throw new Error('leader(hero) is required. new Hero()')
     }
+    this.join(leader)
+    this.leader = leader.setLeader()
 
     this.initProps()
     SimpleStore.subscribe(Contracts.KEY_DOWN_EVENT, ({ keyCode }) => {
@@ -57,6 +57,8 @@ class Avengers {
     this.y = this.y = height - 50
     this.demoTimer = null
     this.demoReverseDirection = false
+    this.heroMap = { [this.leader.id]: this.leader }
+    this.memberMap = [...this.members].reduce((p, c) => ({ ...p, [c]: -1 }), {})
     this.initProps()
 
     // reset heroes
