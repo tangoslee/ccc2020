@@ -2,8 +2,8 @@ import Contracts from '@/Contracts'
 import { SimpleStore } from '@/stores/simple-store'
 
 class Bullet {
-  constructor (ctx, x, y, height) {
-    // console.log('bullet created')
+  constructor (ctx, x, y, height, icon) {
+    // console.log('bullet created', icon)
 
     this.x = x
     this.initY = y
@@ -15,6 +15,7 @@ class Bullet {
     this.marginTop = 10
     this.distance = 0
     this.offsetY = 0
+    this.icon = icon
     this.reset()
   }
 
@@ -30,7 +31,7 @@ class Bullet {
     this.distance = this.distanceLimit
   }
 
-  fire (icon) {
+  fire () {
     const { debug, ctx } = SimpleStore.state
     // console.log('drop:', this.y, ' >= ', limit, this.positionY >= limit)
     if (this.distance < this.distanceLimit && this.y > this.marginTop) {
@@ -40,8 +41,8 @@ class Bullet {
         ctx.fillStyle = Contracts.COLOR_MONSTER
         ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x, this.y)
       }
-
-      ctx.drawImage(icon, this.x, this.y, this.w, this.h)
+      // console.log('fire icon', this.icon)
+      ctx.drawImage(this.icon, this.x, this.y, this.w, this.h)
 
       let velocityY = this.speed
       velocityY = Math.floor(velocityY) * this.friction

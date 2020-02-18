@@ -34,15 +34,21 @@ class Monsters {
     for (let monster of this.monsters) {
       monster.show()
 
-      if (monster.isHit(this.hero.getBullets())) {
+      if (monster.isHit(this.hero.bullets)) {
         // console.log('monster hit by bullet')
         SimpleStore.publish(Contracts.EVENT_BULLET_HIT_MONSTER, { monster })
-      } else if (monster.hitHero(this.hero)) {
+        return
+      }
+      const hero = monster.hitHero(this.hero)
+      if (hero) {
         // console.log('monster hit the hero')
-        SimpleStore.publish(Contracts.EVENT_MONSTER_HIT_HERO, { monster })
-      } else if (monster.drop(virusBorderY)) {
+        SimpleStore.publish(Contracts.EVENT_MONSTER_HIT_HERO, { monster, hero })
+        return
+      }
+      if (monster.drop(virusBorderY)) {
         // console.log('monster dropped!')
         SimpleStore.publish(Contracts.EVENT_MONSTER_REACH_GROUND)
+        return
       }
     } // E: for loop
   } // E: run()

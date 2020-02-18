@@ -35,7 +35,7 @@ class Game {
       }
     })
 
-    // resize event
+    // resize event @deprecated
     SimpleStore.subscribe(Contracts.GAME_RESIZED_EVENT, ({ width, height }) => {
       this.cfg = {
         ...this.cfg,
@@ -52,13 +52,15 @@ class Game {
       this.decreasePollutedArea()
     })
 
-    SimpleStore.subscribe(Contracts.EVENT_MONSTER_HIT_HERO, ({ monster }) => {
+    SimpleStore.subscribe(Contracts.EVENT_MONSTER_HIT_HERO, ({ monster, hero }) => {
       monster.reset()
-      if (this.hero.decreaseHealth()) {
+      if (hero.decreaseHealth()) {
         this.increasePollutedArea(0.1)
-      } else {
+      } else if (hero.isLeader) {
         // gameOver
         this.lostGame()
+      } else {
+        
       }
     })
     SimpleStore.subscribe(Contracts.EVENT_MONSTER_REACH_GROUND, () => this.increasePollutedArea())
@@ -66,7 +68,7 @@ class Game {
 
   initGame () {
     // this.cfg.virusBorderY = Math.floor(this.height * 0.8)
-    const { height } = this.cfg
+    const { height } = SimpleStore.state
     const virusBorderY = Math.floor(height * 0.8)
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { virusBorderY }, { virusBorderY })
     // console.log({ 'initGame': height, virusBorderY })
@@ -75,7 +77,8 @@ class Game {
 
     this.hitScore = 0
     this.worldSaved = 0
-    if (this.hero) {
+
+    if (!!this.hero) {
       this.hero.reset()
     }
 
@@ -161,7 +164,7 @@ class Game {
     const virusPollutionDegree = Math.floor((height - virusBorderY) / height * 100)
     // console.log('virusPollutionDegree', virusPollutionDegree, virusBorderY, this.height)
 
-    const crewSaved = this.hero.text.length - 1
+    const crewSaved = this.hero.crewSaved
     const worldSaved = this.worldSaved
 
     const damageText = `${this.hero.damage.value}/${this.hero.damage.maxDamage}`
@@ -275,8 +278,11 @@ class Game {
   }
 
   increasePollutedArea (increaseRate = 0) {
-    const { height } = this.cfg
-    const { virusBorderY: oldVirusBorderY, increaseRate: defaultIncreaseRate } = SimpleStore.state
+    const { god, height, virusBorderY: oldVirusBorderY, increaseRate: defaultIncreaseRate } = SimpleStore.state
+
+    if (god) {
+      return virusBorderY
+    }
 
     let val = Math.floor(oldVirusBorderY) - Math.floor(height * (increaseRate || defaultIncreaseRate))
 
@@ -288,8 +294,7 @@ class Game {
   }
 
   decreasePollutedArea (increaseRate = 0) {
-    const { height } = this.cfg
-    const { virusBorderY: oldVirusBorderY, increaseRate: defaultIncreaseRate } = SimpleStore.state
+    const { height, virusBorderY: oldVirusBorderY, increaseRate: defaultIncreaseRate } = SimpleStore.state
     // this.cfg.virusBorderY += Math.floor(height * this.increaseRate)
     let val = Math.floor(oldVirusBorderY) + Math.floor(height * (increaseRate || defaultIncreaseRate))
 
@@ -335,7 +340,7 @@ class Game {
 
   checkGameResult () {
     const { height, virusBorderY } = SimpleStore.state
-    const crewSaved = this.hero.text.length - 1
+    const crewSaved = this.hero.crewSaved
     this.worldSaved = virusBorderY >= height ? 1 : 0
     if (this.worldSaved && crewSaved === 4) {
       this.wonGame()

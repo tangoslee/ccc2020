@@ -1,6 +1,8 @@
 import Contracts from '@/Contracts'
 import { SimpleStore } from '@/stores/simple-store'
 import Damage from '@/models/Damage'
+import Hero from '@/models/Hero'
+import Avengers from '@/models/Avengers'
 
 class Monster {
   constructor () {
@@ -159,9 +161,12 @@ class Monster {
   }
 
   hitHero (hero) {
-    if (this.isOverlapping(hero)) {
-      // console.log('hit hero')
-      return true
+    const heros = (hero instanceof Avengers) ? hero.heros : [hero]
+    for (let hero of heros) {
+      if (this.isOverlapping(hero)) {
+        // console.log('hit hero')
+        return hero
+      }
     }
     return false
   }
@@ -169,7 +174,9 @@ class Monster {
   transformToHero (hero) {
     this.release = true
     this.speed = 50
-    hero.addText(this.text)
+    if (hero instanceof Avengers) {
+      hero.join(new Hero(this.text, hero.leaderX))
+    }
   }
 
 }

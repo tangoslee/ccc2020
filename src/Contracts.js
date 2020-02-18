@@ -23,6 +23,8 @@ const FONT_SIZE_HERO = 96
 
 const HERO = 'HERO'
 const MONSTER = 'MONSTER'
+const LEFT = 'LEFT'
+const RIGHT = 'RIGHT'
 
 const COLOR_WON_GAME = '#000'
 const COLOR_LOSE_GAME = '#c0392b'
@@ -90,6 +92,8 @@ export default {
 
   HERO,
   MONSTER,
+  LEFT,
+  RIGHT,
 
   COLOR_WON_GAME,
   COLOR_LOSE_GAME,

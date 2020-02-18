@@ -17,6 +17,7 @@
   import Game from '@/models/Game'
   import Hero from '@/models/Hero'
   import Monsters from '@/models/Monsters'
+  import Avengers from '@/models/Avengers'
 
   export default {
     name: 'AppMain',
@@ -33,7 +34,7 @@
     computed: {},
     created () {
       // console.log('created')
-      const hero = new Hero()
+      const hero = new Avengers(new Hero())
       const monsters = new Monsters(hero)
       this.game = new Game({ hero, monsters })
 
@@ -46,8 +47,10 @@
       })
 
       SimpleStore.initState({
+        god: false,
         debug: false,
         ctx: null,
+        bulletIcon: null,
         width: 0,
         height: 0,
         gameMode: Contracts.INTRO_THE_GAME,
@@ -115,7 +118,7 @@
       initBulletIcon () {
         const image = new Image()
         image.src = Contracts.BULLET_ICON
-        image.onload = () => SimpleStore.publish(Contracts.BULLET_ICON_LOADED, { bulletIcon: image })
+        image.onload = () => SimpleStore.publish(Contracts.BULLET_ICON_LOADED, { bulletIcon: image }, { bulletIcon: image })
       },
       togglePause () {
         this.pause = !this.pause
