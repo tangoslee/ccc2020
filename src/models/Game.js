@@ -107,6 +107,14 @@ class Game {
     ctx.fillRect(0, virusBorderY, width, height)
   }
 
+  drawBackGround () {
+    const { ctx, width, height, gameCfg } = SimpleStore.state
+    const y = Math.floor(height - Math.floor(gameCfg.heroFontSize * 1.25))
+    ctx.fillStyle = Contracts.COLOR_BACKGROUND
+    // ctx.fillStyle = 'rgba(192, 57, 43, 0.2)'
+    ctx.fillRect(0, y, width, height)
+  }
+
   showDemoInfo (timestamp) {
     const { ctx, width, height, demoMode } = SimpleStore.state
     if (demoMode) {
@@ -275,7 +283,7 @@ class Game {
   }
 
   startDemo () {
-    const increaseRate = 0.067
+    const increaseRate = 0.025
     const demoMode = true
     const gameMode = Contracts.ON_THE_GAME
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { gameMode }, { gameMode, demoMode, increaseRate })
@@ -311,6 +319,7 @@ class Game {
     this.clearScreen()
 
     this.drawCleanZone()
+    this.drawBackGround()
     this.drawPollutionZone()
 
     this.showDemoInfo(timestamp)

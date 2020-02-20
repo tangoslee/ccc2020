@@ -93,7 +93,34 @@
           height = 900
         }
 
-        if (width < 1024) {
+        if (width > 2560) {
+          gameCfg = {
+            ...gameCfg,
+            heroSpeed: 50,
+            monsterSpeedMin: 1,
+            monsterSpeedMax: 20,
+            fontSize: 36,
+            bulletSize: 24,
+            heroFontSize: 96,
+            monsterFontSizeMin: 48,
+            monsterFontSizeMax: 96,
+            increasePollutedAreaRate: 0.08
+          }
+
+        } else if (width > 1024) {
+          gameCfg = {
+            ...gameCfg,
+            heroSpeed: 25,
+            monsterSpeedMin: 3,
+            monsterSpeedMax: 12,
+            fontSize: 32,
+            bulletSize: 16,
+            heroFontSize: 64,
+            monsterFontSizeMin: 32,
+            monsterFontSizeMax: 64,
+            increasePollutedAreaRate: 0.04
+          }
+        } else {
           gameCfg = {
             ...gameCfg,
             heroSpeed: 16,
@@ -105,32 +132,6 @@
             monsterFontSizeMin: 16,
             monsterFontSizeMax: 32,
             increasePollutedAreaRate: 0.01
-          }
-        } else if (width < 2560) {
-          gameCfg = {
-            ...gameCfg,
-            heroSpeed: 25,
-            monsterSpeedMin: 1,
-            monsterSpeedMax: 5,
-            fontSize: 32,
-            bulletSize: 16,
-            heroFontSize: 64,
-            monsterFontSizeMin: 32,
-            monsterFontSizeMax: 64,
-            increasePollutedAreaRate: 0.04
-          }
-        } else {
-          gameCfg = {
-            ...gameCfg,
-            heroSpeed: 50,
-            monsterSpeedMin: 1,
-            monsterSpeedMax: 10,
-            fontSize: 36,
-            bulletSize: 24,
-            heroFontSize: 96,
-            monsterFontSizeMin: 48,
-            monsterFontSizeMax: 96,
-            increasePollutedAreaRate: 0.08
           }
         }
 
