@@ -14,13 +14,14 @@ class Monster {
     this.height = height
 
     this.initY = -this.random(0, 500)
-    this.friction = 0.9
+    this.friction = 0.5
     this.reset()
 
   }
 
   reset () {
     // console.log('reset monster')
+    const { gameCfg } = SimpleStore.state
     const fonts = [
       'Lacquer',
       'Eater',
@@ -30,9 +31,9 @@ class Monster {
       'Nosifer'
     ]
     this.velocityY = 0
-    this.speed = this.random(1, 10)
+    this.speed = this.random(gameCfg.monsterSpeedMin, gameCfg.monsterSpeedMax)
     this.x = this.random(100, (this.width - 200))
-    this.size = Math.round(this.random(50, 96))
+    this.size = Math.round(this.random(gameCfg.monsterFontSizeMin, gameCfg.monsterFontSizeMax))
     this.font = fonts[this.random(0, fonts.length - 1)]
     this.color = Contracts.COLOR_MONSTER
     this.y = Math.floor(this.initY)

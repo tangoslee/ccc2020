@@ -34,12 +34,6 @@
     computed: {},
     created () {
       // console.log('created')
-      const hero = new Avengers(new Hero())
-      const monsters = new Monsters(hero)
-      this.game = new Game({ hero, monsters })
-
-      this.initBulletIcon()
-
       this.$nextTick(() => {
         window.addEventListener('resize', this.handleResizeEvent)
         window.addEventListener('keyup', ({ keyCode }) => SimpleStore.publish(Contracts.KEY_UP_EVENT, { keyCode }))
@@ -51,7 +45,8 @@
         debug: false,
         ctx: null,
         bulletIcon: null,
-        fullscreen: true,
+        fullscreen: false,
+        gameCfg: {},
         width: 900,
         height: 900,
         gameMode: Contracts.INTRO_THE_GAME,
@@ -71,6 +66,11 @@
         }
       })
 
+      const hero = new Avengers(new Hero())
+      const monsters = new Monsters(hero)
+      this.game = new Game({ hero, monsters })
+
+      this.initBulletIcon()
     },
     mounted () {
       this.canvas = this.$refs.canvas
@@ -84,7 +84,7 @@
         return Math.floor(Math.random() * max) + min
       },
       handleResizeEvent () {
-        let { fullscreen, width, height } = SimpleStore.state
+        let { fullscreen, width, height, gameCfg } = SimpleStore.state
         if (fullscreen) {
           width = window.innerWidth - 1
           height = window.innerHeight - 1
@@ -93,11 +93,52 @@
           height = 900
         }
 
+        if (width < 1024) {
+          gameCfg = {
+            ...gameCfg,
+            heroSpeed: 16,
+            monsterSpeedMin: 1,
+            monsterSpeedMax: 4,
+            fontSize: 24,
+            bulletSize: 12,
+            heroFontSize: 32,
+            monsterFontSizeMin: 16,
+            monsterFontSizeMax: 32,
+            increasePollutedAreaRate: 0.01
+          }
+        } else if (width < 2560) {
+          gameCfg = {
+            ...gameCfg,
+            heroSpeed: 25,
+            monsterSpeedMin: 1,
+            monsterSpeedMax: 5,
+            fontSize: 32,
+            bulletSize: 16,
+            heroFontSize: 64,
+            monsterFontSizeMin: 32,
+            monsterFontSizeMax: 64,
+            increasePollutedAreaRate: 0.04
+          }
+        } else {
+          gameCfg = {
+            ...gameCfg,
+            heroSpeed: 50,
+            monsterSpeedMin: 1,
+            monsterSpeedMax: 10,
+            fontSize: 36,
+            bulletSize: 24,
+            heroFontSize: 96,
+            monsterFontSizeMin: 48,
+            monsterFontSizeMax: 96,
+            increasePollutedAreaRate: 0.08
+          }
+        }
+
         // console.log({ fullscreen, width, height })
         this.canvas.width = width
         this.canvas.height = height
 
-        SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { width, height }, { width, height })
+        SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { width, height, gameCfg }, { width, height, gameCfg })
         this.init()
         // console.log('resized', `${width}x${height}`)
       },
