@@ -40,11 +40,12 @@ class Avengers {
   }
 
   initProps () {
+    const { gameCfg } = SimpleStore.state
     this.props = {
       keys: [],
       velocityX: 0,
       velocityInterval: 5,
-      speed: 50,
+      speed: gameCfg.heroSpeed,
       friction: 0.9 // 0.98,
     }
   }
@@ -103,11 +104,12 @@ class Avengers {
   }
 
   relocate () {
-    // console.log('relocate')
+    const { gameCfg } = SimpleStore.state
+    console.log('relocate', { gameCfg })
     this.heros
       .sort((a, b) => (this.members.indexOf(a.id) - this.members.indexOf(b.id)))
       .reduce((offsetX, hero) => {
-        offsetX += (hero.w || 90)
+        offsetX += (hero.w || gameCfg.heroFontSize)
         // console.log(hero.id, hero.w, offsetX)
         hero.setShiftX(offsetX)
         return offsetX

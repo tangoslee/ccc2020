@@ -5,7 +5,7 @@ import Damage from '@/models/Damage'
 
 class Hero {
 
-  constructor (initText = 'A', initX = 0) {
+  constructor (initText = 'C', initX = 0) {
     // console.log('hero created', { initText, initX })
     this.initX = initX
     this.limitMargin = 5
@@ -75,8 +75,8 @@ class Hero {
    */
   drawHero (x, y) {
 
-    const { ctx, debug, width, height } = SimpleStore.state
-    ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${this.font}`
+    const { ctx, debug, width, height, gameCfg } = SimpleStore.state
+    ctx.font = `bold ${gameCfg.heroFontSize}px ${this.font}`
     ctx.fillStyle = this.color
 
     const { width: textWidth, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(this.text)

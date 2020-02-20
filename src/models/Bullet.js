@@ -4,11 +4,12 @@ import { SimpleStore } from '@/stores/simple-store'
 class Bullet {
   constructor (ctx, x, y, height, icon) {
     // console.log('bullet created', icon)
+    const { gameCfg } = SimpleStore.state
 
     this.x = x
     this.initY = y
     this.friction = 0.9
-    const size = 24
+    const size = gameCfg.bulletSize
     this.w = size
     this.h = size
     this.distanceLimit = Math.floor(height * 0.75)

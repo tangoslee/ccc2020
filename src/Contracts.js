@@ -30,6 +30,8 @@ const COLOR_WON_GAME = '#000'
 const COLOR_LOSE_GAME = '#c0392b'
 const COLOR_CLEAN_ZONE = '#fed136'
 const COLOR_POLLUTION_ZONE = '#000'
+// const COLOR_BACKGROUND = 'rgba(192, 57, 43, 0.2)' //'#c0392b'
+const COLOR_BACKGROUND = 'rgba(0, 0, 0, 0.3)' //'#c0392b'
 
 const COLOR_GAME_INFO = '#c0392b'
 const COLOR_HERO = '#fec503'
@@ -100,6 +102,7 @@ export default {
   COLOR_LOSE_GAME,
   COLOR_CLEAN_ZONE,
   COLOR_POLLUTION_ZONE,
+  COLOR_BACKGROUND,
 
   COLOR_GAME_INFO,
   COLOR_HERO,

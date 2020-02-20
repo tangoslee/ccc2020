@@ -34,10 +34,11 @@ class Game {
       this.decreasePollutedArea()
     })
 
-    SimpleStore.subscribe(Contracts.EVENT_MONSTER_HIT_HERO, ({ monster, hero }) => {
+    SimpleStore.subscribe(Contracts.EVENT_MONSTER_HIT_HERO, ({ monster, hero }, { state }) => {
+      const { gameCfg } = state
       monster.reset()
       if (hero.decreaseHealth()) {
-        this.increasePollutedArea(0.1)
+        this.increasePollutedArea(gameCfg.increasePollutedAreaRate)
       } else if (hero.isLeader) {
         // gameOver
         this.lostGame()
@@ -67,15 +68,15 @@ class Game {
     this.demoTimer = null
   }
 
-  setHero (hero) {
-    this.hero = hero
-    return this
-  }
-
-  setMonsters (monsters) {
-    this.monsters = monsters
-    return this
-  }
+  // setHero (hero) {
+  //   this.hero = hero
+  //   return this
+  // }
+  //
+  // setMonsters (monsters) {
+  //   this.monsters = monsters
+  //   return this
+  // }
 
   displayText (text, lineHeightInterval, offsetX = null, offsetY = null) {
     const { ctx, width, height } = SimpleStore.state
@@ -107,6 +108,14 @@ class Game {
     ctx.fillRect(0, virusBorderY, width, height)
   }
 
+  drawBackGround () {
+    const { ctx, width, height, gameCfg } = SimpleStore.state
+    const y = Math.floor(height - Math.floor(gameCfg.heroFontSize * 1.25))
+    ctx.fillStyle = Contracts.COLOR_BACKGROUND
+    // ctx.fillStyle = 'rgba(192, 57, 43, 0.2)'
+    ctx.fillRect(0, y, width, height)
+  }
+
   showDemoInfo (timestamp) {
     const { ctx, width, height, demoMode } = SimpleStore.state
     if (demoMode) {
@@ -135,7 +144,7 @@ class Game {
   }
 
   showGameInfo () {
-    const { ctx, width, height, virusBorderY } = SimpleStore.state
+    const { ctx, width, height, virusBorderY, gameCfg } = SimpleStore.state
 
     if (!this.hero) {
       throw new Error('hero not set')
@@ -152,20 +161,20 @@ class Game {
     const gameInfoText = `POLLUTION: ${virusPollutionDegree}/100 DAMAGE: ${damageText} SCORE: ${hitScoreText}\n
      SAVE CREW: ${crewSaved}/4 WORLD: ${worldSaved}/1`
 
-    let fontSize = 36
+    // let fontSize = 36
+    //
+    // if (width < 1024) {
+    //   fontSize = 32
+    // }
 
-    if (width < 1024) {
-      fontSize = 32
-    }
-
-    ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
+    ctx.font = `bold ${gameCfg.fontSize}px ${Contracts.FONT_GAME_INFO}`
     ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
 
-    this.displayText(gameInfoText, Math.floor(fontSize * 0.65))
+    this.displayText(gameInfoText, Math.floor(gameCfg.fontSize * 0.65))
   }
 
   showGameIntro (timestamp) {
-    const { ctx, width, height } = SimpleStore.state
+    const { ctx, width, height, gameCfg } = SimpleStore.state
 
     if (this.introTimer === null) {
       this.introTimer = {
@@ -183,13 +192,8 @@ class Game {
     const introTexts = Contracts.INTRO_TEXT
       .replace('##SEC##', `${seconds}`)
 
-    let fontSize = 36
-    let lineHeightInterval = 36
-
-    if (width < 1024) {
-      fontSize = 32
-      lineHeightInterval = 32
-    }
+    const { fontSize } = gameCfg
+    const lineHeightInterval = Math.floor(fontSize * 0.75)
 
     ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
     ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
@@ -280,7 +284,7 @@ class Game {
   }
 
   startDemo () {
-    const increaseRate = 0.067
+    const increaseRate = 0.025
     const demoMode = true
     const gameMode = Contracts.ON_THE_GAME
     SimpleStore.publish(Contracts.GAME_CFG_UPDATED_EVENT, { gameMode }, { gameMode, demoMode, increaseRate })
@@ -316,6 +320,7 @@ class Game {
     this.clearScreen()
 
     this.drawCleanZone()
+    this.drawBackGround()
     this.drawPollutionZone()
 
     this.showDemoInfo(timestamp)
