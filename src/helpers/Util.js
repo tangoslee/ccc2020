@@ -134,7 +134,24 @@ class Polygon {
   }
 }
 
+const shuffle = (val) => {
+  const a = typeof val === 'string' ? val.split('') : val
+
+  if (!Array.isArray(a)) {
+    throw new Error('parameter must be array or string')
+  }
+
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  console.log('shuffled', a)
+
+  return a
+}
+
 export {
   Polygon,
-  Position
+  Position,
+  shuffle
 }

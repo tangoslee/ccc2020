@@ -12,7 +12,7 @@ class Bullet {
     const size = gameCfg.bulletSize
     this.w = size
     this.h = size
-    this.distanceLimit = Math.floor(height * 0.75)
+    this.distanceLimit = Math.floor(height * 0.85)
     this.marginTop = 10
     this.distance = 0
     this.offsetY = 0

@@ -44,6 +44,7 @@
         god: false,
         debug: false,
         ctx: null,
+        crew: 'CANDY',
         bulletIcon: null,
         fullscreen: false,
         gameCfg: {},

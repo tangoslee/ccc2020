@@ -1,12 +1,19 @@
 import Monster from '@/models/Monster'
 import Contracts from '@/Contracts'
 import { SimpleStore } from '@/stores/simple-store'
+// import { shuffle } from '@/helpers/Util'
+//
+// const letters = 'CANDYABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 class Monsters {
   constructor (hero = null) {
     this.monsters = []
     this.hero = hero
     this.timer = null
+  }
+
+  random (min, max) {
+    return Math.floor(Math.random() * max) + min
   }
 
   setHero (hero) {
@@ -16,12 +23,14 @@ class Monsters {
 
   init () {
     // console.log('monsters init')
+
     // Create monsters
     this.monsters = []
-    'CNDY'.split('').forEach(ch => {
-      const monster = new Monster().setText(ch)
-      this.monsters.push(monster)
-    })
+    'CNDYVRUS'.split('')
+      .forEach(ch => {
+        const monster = new Monster().setText(ch)
+        this.monsters.push(monster)
+      })
     this.timer = null
   }
 

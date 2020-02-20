@@ -7,17 +7,17 @@ import { Polygon, Position } from '@/helpers/Util'
 
 class Monster {
   constructor () {
-    const { ctx, width, height } = SimpleStore.state
+    const { width, height } = SimpleStore.state
     // console.log('monster created')
 
-    this.ctx = ctx
     this.width = width
     this.height = height
 
     this.initY = -this.random(0, 500)
     this.friction = 0.5
     this.angle = 0
-    this.isRotate = this.random(0, 10) % 3 === 0
+    this.counter = 0
+    this.isRotate = this.random(0, 10) % 5 !== 0
     this.reset()
 
   }
@@ -34,6 +34,7 @@ class Monster {
       'Nosifer'
     ]
     this.angle = 0
+    this.counter = 0
     this.velocityY = 0
     this.speed = this.random(gameCfg.monsterSpeedMin, gameCfg.monsterSpeedMax)
     this.x = this.random(100, (this.width - 200))
@@ -102,6 +103,10 @@ class Monster {
       if (this.isRotate) {
         ctx.save()
         // ctx.translate(this.x + this.w / 2, this.y + this.h / 2)
+        // Sign wave
+        // const x = this.x + (180 - Math.sign(this.counter))
+        // this.counter += Math.PI / 2
+
         ctx.translate(this.x - this.w / 2, this.y - this.h / 2)
         ctx.rotate(this.angle)
         ctx.fillText(this.text, -(this.w / 2), -(this.h / 2))
@@ -109,6 +114,7 @@ class Monster {
         // this.angle += (Math.PI * 2) / 30
         this.angle += (Math.PI / 180)
       } else {
+
         ctx.fillText(this.text, this.x, this.y)
       }
     }
