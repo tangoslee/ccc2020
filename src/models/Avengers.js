@@ -105,7 +105,7 @@ class Avengers {
 
   relocate () {
     const { gameCfg } = SimpleStore.state
-    console.log('relocate', { gameCfg })
+    // console.log('relocate', { gameCfg })
     this.heros
       .sort((a, b) => (this.members.indexOf(a.id) - this.members.indexOf(b.id)))
       .reduce((offsetX, hero) => {

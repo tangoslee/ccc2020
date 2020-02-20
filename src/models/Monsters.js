@@ -6,6 +6,7 @@ class Monsters {
   constructor (hero = null) {
     this.monsters = []
     this.hero = hero
+    this.timer = null
   }
 
   setHero (hero) {
@@ -21,6 +22,7 @@ class Monsters {
       const monster = new Monster().setText(ch)
       this.monsters.push(monster)
     })
+    this.timer = null
   }
 
   reset () {
@@ -28,11 +30,16 @@ class Monsters {
   }
 
   // Drop Monsters
-  run () {
+  run (timestamp) {
     const { virusBorderY } = SimpleStore.state
+    if (!this.timer) {
+      this.timer = timestamp
+    }
+    const timeSeq = Math.floor(timestamp - this.timer)
+
     // console.log('monsters', this.monsters.length)
     for (let monster of this.monsters) {
-      monster.show()
+      monster.show(timeSeq)
 
       if (monster.isHit(this.hero.bullets)) {
         // console.log('monster hit by bullet')

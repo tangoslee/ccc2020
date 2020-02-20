@@ -3,6 +3,7 @@ import { SimpleStore } from '@/stores/simple-store'
 import Damage from '@/models/Damage'
 import Hero from '@/models/Hero'
 import Avengers from '@/models/Avengers'
+import { Polygon, Position } from '@/helpers/Util'
 
 class Monster {
   constructor () {
@@ -15,6 +16,8 @@ class Monster {
 
     this.initY = -this.random(0, 500)
     this.friction = 0.5
+    this.angle = 0
+    this.isRotate = this.random(0, 10) % 3 === 0
     this.reset()
 
   }
@@ -30,6 +33,7 @@ class Monster {
       'Frijole',
       'Nosifer'
     ]
+    this.angle = 0
     this.velocityY = 0
     this.speed = this.random(gameCfg.monsterSpeedMin, gameCfg.monsterSpeedMax)
     this.x = this.random(100, (this.width - 200))
@@ -62,8 +66,8 @@ class Monster {
     return this.isCured()
   }
 
-  show () {
-    const { debug } = SimpleStore.state
+  show (timeSeq) {
+    const { debug, ctx, width, height } = SimpleStore.state
     // font-family: 'Lacquer', sans-serif;
     // font-family: 'Eater', cursive;
     // font-family: 'Homemade Apple', cursive;
@@ -71,32 +75,46 @@ class Monster {
     // font-family: 'Frijole', cursive;
     // font-family: 'Nosifer', cursive;
 
+    // const fps = (this.oldSeq === null) ? 0 : timeSeq - this.oldSeq
+    // this.oldSeq = timeSeq
+
+    // console.log('timeSeq: ', timeSeq % 360)
+    const degree = timeSeq % 360
+
     // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline
     // ctx.textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
     if (this.release) {
-      // this.ctx.font = `bold ${Contracts.FONT_SIZE_HERO}px ${Contracts.FONT_HERO}`
-      // this.ctx.save()
-      this.ctx.fillStyle = Contracts.COLOR_HERO
-      // this.ctx.rotate(90 * Math.PI / 180)
-      this.ctx.textBaseline = 'alphabetic'
-      this.ctx.fillText(this.text, this.x, this.y)
-      // this.ctx.restore()
+
+      ctx.fillStyle = Contracts.COLOR_HERO
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillText(this.text, this.x, this.y)
     } else {
       if (debug) {
-        this.ctx.font = `10px serif`
-        this.ctx.fillStyle = Contracts.COLOR_MONSTER
-        this.ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x + 20, this.y + 20)
+        ctx.font = `10px serif`
+        ctx.fillStyle = Contracts.COLOR_MONSTER
+        ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x + 20, this.y + 20)
       }
 
-      this.ctx.font = `bold ${this.size}px ${this.font}`
-      this.ctx.fillStyle = this.color
-      this.ctx.textBaseline = 'alphabetic'
-      this.ctx.fillText(this.text, this.x, this.y)
+      ctx.font = `bold ${this.size}px ${this.font}`
+      ctx.fillStyle = this.color
+      ctx.textBaseline = 'alphabetic'
 
+      if (this.isRotate) {
+        ctx.save()
+        // ctx.translate(this.x + this.w / 2, this.y + this.h / 2)
+        ctx.translate(this.x - this.w / 2, this.y - this.h / 2)
+        ctx.rotate(this.angle)
+        ctx.fillText(this.text, -(this.w / 2), -(this.h / 2))
+        ctx.restore()
+        // this.angle += (Math.PI * 2) / 30
+        this.angle += (Math.PI / 180)
+      } else {
+        ctx.fillText(this.text, this.x, this.y)
+      }
     }
 
-    const { width, actualBoundingBoxAscent, actualBoundingBoxDescent } = this.ctx.measureText(this.text)
-    this.w = Math.floor(width)
+    const { width: textWidth, actualBoundingBoxAscent, actualBoundingBoxDescent } = ctx.measureText(this.text)
+    this.w = Math.floor(textWidth)
     this.h = Math.floor(actualBoundingBoxAscent) + actualBoundingBoxDescent
   }
 
@@ -122,6 +140,11 @@ class Monster {
     const y = Math.floor(this.y)
     const w = Math.floor(this.w)
     const h = Math.floor(this.h)
+
+    const a = new Polygon(new Position(x, y))
+    const b = new Polygon(new Position(target.x, target.y))
+
+    // return a.isIntersecting(b)
 
     // const { debug } = SimpleStore.state
     // if (debug) {

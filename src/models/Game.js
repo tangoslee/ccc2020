@@ -341,7 +341,7 @@ class Game {
         // console.log('play game')
         this.showGameInfo()
         this.hero.run(timestamp)
-        this.monsters.run()
+        this.monsters.run(timestamp)
         this.checkGameResult()
     }
 
