@@ -5,7 +5,7 @@ import Damage from '@/models/Damage'
 
 class Hero {
 
-  constructor (initText = 'C', initX = 0) {
+  constructor (initText = 'A', initX = 0) {
     // console.log('hero created', { initText, initX })
     this.initX = initX
     this.limitMargin = 5

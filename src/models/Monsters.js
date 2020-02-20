@@ -1,11 +1,19 @@
 import Monster from '@/models/Monster'
 import Contracts from '@/Contracts'
 import { SimpleStore } from '@/stores/simple-store'
+// import { shuffle } from '@/helpers/Util'
+//
+// const letters = 'CANDYABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 class Monsters {
   constructor (hero = null) {
     this.monsters = []
     this.hero = hero
+    this.timer = null
+  }
+
+  random (min, max) {
+    return Math.floor(Math.random() * max) + min
   }
 
   setHero (hero) {
@@ -15,12 +23,15 @@ class Monsters {
 
   init () {
     // console.log('monsters init')
+
     // Create monsters
     this.monsters = []
-    'CNDY'.split('').forEach(ch => {
-      const monster = new Monster().setText(ch)
-      this.monsters.push(monster)
-    })
+    'CNDYVRUS'.split('')
+      .forEach(ch => {
+        const monster = new Monster().setText(ch)
+        this.monsters.push(monster)
+      })
+    this.timer = null
   }
 
   reset () {
@@ -28,11 +39,16 @@ class Monsters {
   }
 
   // Drop Monsters
-  run () {
+  run (timestamp) {
     const { virusBorderY } = SimpleStore.state
+    if (!this.timer) {
+      this.timer = timestamp
+    }
+    const timeSeq = Math.floor(timestamp - this.timer)
+
     // console.log('monsters', this.monsters.length)
     for (let monster of this.monsters) {
-      monster.show()
+      monster.show(timeSeq)
 
       if (monster.isHit(this.hero.bullets)) {
         // console.log('monster hit by bullet')

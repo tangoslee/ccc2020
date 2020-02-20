@@ -128,14 +128,13 @@ class Game {
       const seconds = (new Date(timestamp - diff)).getSeconds()
 
       if (seconds % 2 === 0) {
-        let fontSize = 36
+        const fontSize = 36
 
-        if (width < 1024) {
-          fontSize = 32
-        }
         const gameInfoText = `Press "S" to play...`
-        const x = Math.floor(width) * 0.5 - ctx.measureText(gameInfoText).width / 2
+        // const x = Math.floor(Math.floor(width) / 2) - Math.floor(ctx.measureText(gameInfoText).width / 2)
+        const x = 100
         const y = height
+        
         ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
         ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
         ctx.fillText(gameInfoText, x, y / 2)
@@ -342,7 +341,7 @@ class Game {
         // console.log('play game')
         this.showGameInfo()
         this.hero.run(timestamp)
-        this.monsters.run()
+        this.monsters.run(timestamp)
         this.checkGameResult()
     }
 
