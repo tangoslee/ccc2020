@@ -31,9 +31,14 @@
         frame2: null
       }
     },
-    computed: {},
+    computed: {
+      skylineImageURL () {
+        return require('@/assets/toronto-3773752.svg')
+      }
+    },
     created () {
       // console.log('created')
+
       this.$nextTick(() => {
         window.addEventListener('resize', this.handleResizeEvent)
         window.addEventListener('keyup', ({ keyCode }) => SimpleStore.publish(Contracts.KEY_UP_EVENT, { keyCode }))
@@ -43,9 +48,11 @@
       SimpleStore.initState({
         god: false,
         debug: false,
+        fixedHero: true,
         ctx: null,
         crew: 'CANDY',
         bulletIcon: null,
+        skylineImage: null,
         fullscreen: false,
         gameCfg: {},
         width: 900,
@@ -71,6 +78,7 @@
       const monsters = new Monsters(hero)
       this.game = new Game({ hero, monsters })
 
+      this.initSkylineImage()
       this.initBulletIcon()
     },
     mounted () {
@@ -112,8 +120,8 @@
           gameCfg = {
             ...gameCfg,
             heroSpeed: 25,
-            monsterSpeedMin: 3,
-            monsterSpeedMax: 12,
+            monsterSpeedMin: 1,
+            monsterSpeedMax: 5,
             fontSize: 32,
             bulletSize: 16,
             heroFontSize: 64,
@@ -127,7 +135,7 @@
             heroSpeed: 16,
             monsterSpeedMin: 1,
             monsterSpeedMax: 4,
-            fontSize: 24,
+            fontSize: 32,
             bulletSize: 12,
             heroFontSize: 32,
             monsterFontSizeMin: 16,
@@ -169,7 +177,13 @@
       initBulletIcon () {
         const image = new Image()
         image.src = Contracts.BULLET_ICON
+        // image.src = Contracts.BULLET_ICON_RED
         image.onload = () => SimpleStore.publish(Contracts.BULLET_ICON_LOADED, { bulletIcon: image }, { bulletIcon: image })
+      },
+      initSkylineImage () {
+        const image = new Image()
+        image.src = this.skylineImageURL
+        image.onload = () => SimpleStore.publish(Contracts.SKYLINE_IMG_LOADED, { skylineImage: image }, { skylineImage: image })
       },
       togglePause () {
         this.pause = !this.pause

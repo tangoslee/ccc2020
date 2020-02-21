@@ -75,7 +75,7 @@ class Hero {
    */
   drawHero (x, y) {
 
-    const { ctx, debug, width, height, gameCfg } = SimpleStore.state
+    const { ctx, debug, width, height, gameCfg, fixedHero } = SimpleStore.state
     ctx.font = `bold ${gameCfg.heroFontSize}px ${this.font}`
     ctx.fillStyle = this.color
 
@@ -83,9 +83,15 @@ class Hero {
     this.w = Math.floor(textWidth)
     this.h = Math.floor(actualBoundingBoxAscent) + Math.floor(actualBoundingBoxDescent)
 
-    let offsetY = Math.floor(y) - Math.floor(this.h / 5) // 10% above on the borderY
-    if (offsetY + this.h > height) {
-      offsetY = height - this.h
+    let offsetY = 0
+
+    if (fixedHero) {
+      offsetY = Math.floor(height - this.h)
+    } else {
+      offsetY = Math.floor(y) - Math.floor(this.h / 5) // 10% above on the borderY
+      if (offsetY + this.h > height) {
+        offsetY = height - this.h
+      }
     }
 
     x += Math.floor(this.shiftX)

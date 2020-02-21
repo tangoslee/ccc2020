@@ -12,7 +12,7 @@ class Bullet {
     const size = gameCfg.bulletSize
     this.w = size
     this.h = size
-    this.distanceLimit = Math.floor(height * 0.85)
+    this.distanceLimit = Math.floor(height * 0.89)
     this.marginTop = 10
     this.distance = 0
     this.offsetY = 0
@@ -43,6 +43,7 @@ class Bullet {
         ctx.fillText(`x:${this.x},y:${this.y},w:${this.w},h:${this.h}`, this.x, this.y)
       }
       // console.log('fire icon', this.icon)
+      // ctx.fillStyle = Contracts.COLOR_BULLET
       ctx.drawImage(this.icon, this.x, this.y, this.w, this.h)
 
       let velocityY = this.speed

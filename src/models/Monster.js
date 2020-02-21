@@ -126,6 +126,8 @@ class Monster {
 
   drop (limit) {
     // this.velocityY = this.speed
+    const { height, fixedHero } = SimpleStore.state
+
     this.velocityY = this.random(Math.max(1, this.speed - 5), this.speed + 4)
     this.velocityY = Math.floor(this.velocityY) * this.friction
     this.y = Math.floor(this.y) + this.velocityY
@@ -133,7 +135,13 @@ class Monster {
     // console.log('monster speed', this.velocityY)
     const y = Math.floor(this.y - this.h / 5)
     // console.log('drop:', y, ' >= ', limit, this.y >= limit)
-    if (y >= limit) {
+
+    let grounded = y >= limit
+    if (fixedHero) {
+      grounded = y >= height
+    }
+
+    if (grounded) {
       const release = this.release
       this.reset()
       return !release
