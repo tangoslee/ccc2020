@@ -108,11 +108,23 @@ class Game {
   }
 
   drawBackGround () {
-    const { ctx, width, height, gameCfg } = SimpleStore.state
-    const y = Math.floor(height - Math.floor(gameCfg.heroFontSize * 1.25))
-    ctx.fillStyle = Contracts.COLOR_BACKGROUND
-    // ctx.fillStyle = 'rgba(192, 57, 43, 0.2)'
-    ctx.fillRect(0, y, width, height)
+    const { ctx, width, height, gameCfg, skylineImage } = SimpleStore.state
+    if (skylineImage) {
+      // const y = Math.floor(height - Math.floor(gameCfg.heroFontSize * 1.25))
+      // ctx.fillStyle = Contracts.COLOR_BACKGROUND
+      // ctx.fillStyle = 'rgba(192, 57, 43, 0.2)'
+      // ctx.fillRect(0, y, width, height)
+      // 300 x 91
+      const { width: iw, height: ih } = skylineImage
+
+      const w = Math.floor(width + 20)
+      const h = Math.floor(w * ih / iw)
+      const x = -10
+      const y = Math.floor(height - h + 20)
+
+      // console.log('skylineImage', skylineImage.width, skylineImage.height)
+      ctx.drawImage(skylineImage, x, y, w, h)
+    }
   }
 
   showDemoInfo (timestamp) {
@@ -133,7 +145,7 @@ class Game {
         // const x = Math.floor(Math.floor(width) / 2) - Math.floor(ctx.measureText(gameInfoText).width / 2)
         const x = 100
         const y = height
-        
+
         ctx.font = `bold ${fontSize}px ${Contracts.FONT_GAME_INFO}`
         ctx.fillStyle = `${Contracts.COLOR_GAME_INFO}`
         ctx.fillText(gameInfoText, x, y / 2)
@@ -233,8 +245,10 @@ class Game {
     ctx.font = `bold 96px ${font}`
     ctx.fillStyle = `${color}`
 
-    const x = Math.floor(width) * 0.5 - ctx.measureText(gameModeText).width / 2
-    const y = Math.floor(height) * 0.5
+    const { width: fw, height: fh } = ctx.measureText(gameModeText)
+    const x = Math.floor(width) * 0.5 - fw / 2
+    const y = Math.floor(height) * 0.4
+    // const y = Math.floor(height) * 0.5
 
     ctx.fillText(gameModeText, x, y)
 
