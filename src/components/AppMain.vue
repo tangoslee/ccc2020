@@ -33,7 +33,8 @@
     },
     computed: {
       skylineImageURL () {
-        return require('@/assets/toronto-3773752.svg')
+        // return require('@/assets/toronto-3773752.svg')
+        return Contracts.BG_IMAGE
       }
     },
     created () {
